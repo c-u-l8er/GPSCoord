@@ -683,7 +683,7 @@
 
                             <div x-show="open" @click.away="open = false" class="dropdown">
                                 <button @click="currentTab = 'settings'; open = false" class="dropdown-item">Account Settings</button>
-                                <button @click="open = false" class="dropdown-item">Documentation</button>
+                                <button href="https://webhost.systems/documentation#DOCUMENTATION-INDEX.md" @click="handleDocumentationClick($event); open = false" class="dropdown-item">Documentation</button>
                                 <div class="dropdown-divider"></div>
                                 <button @click="logout()" class="dropdown-item" style="color: var(--danger);">Sign Out</button>
                             </div>
@@ -1161,6 +1161,32 @@
                         result += chars.charAt(Math.floor(Math.random() * chars.length));
                     }
                     return result;
+                },
+
+                // Debug function for documentation link
+                handleDocumentationClick(event) {
+                    console.log('🔍 DEBUG: Documentation button clicked');
+                    console.log('🔍 DEBUG: Event object:', event);
+                    console.log('🔍 DEBUG: Button element:', event.target);
+                    console.log('🔍 DEBUG: Href attribute:', event.target.getAttribute('href'));
+                    console.log('🔍 DEBUG: Button type:', event.target.tagName);
+                    
+                    // Test if href attribute exists on button
+                    const href = event.target.getAttribute('href');
+                    if (href) {
+                        console.log('🔍 DEBUG: Href found, attempting navigation to:', href);
+                        // Try to navigate
+                        window.open(href, '_blank');
+                    } else {
+                        console.error('❌ DEBUG: No href attribute found on button');
+                    }
+                    
+                    // Test alternative approach
+                    console.log('🔍 DEBUG: Testing direct URL assignment');
+                    const testUrl = 'https://webhost.systems/documentation#DOCUMENTATION-INDEX.md';
+                    console.log('🔍 DEBUG: Attempting to navigate to:', testUrl);
+                    // Uncomment the line below to test direct navigation
+                    // window.open(testUrl, '_blank');
                 }
             }
         }
