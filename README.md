@@ -1,2 +1,2 @@
-GPSCoord
+GPS Coord
 ========
