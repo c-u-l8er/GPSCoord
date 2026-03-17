@@ -3,13 +3,15 @@
     <head>
         <meta charset="UTF-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-        <title>
-            GPS Coord - Percision Coordination and Tracking Infrastructure
-        </title>
+        <title>GPS Coord — Every Coordinate on Earth, One Search Away</title>
+        <meta
+            name="description"
+            content="GPS Coord is a precision coordinate utility. Look up coordinates for any location, convert formats, calculate distances, explore elevation data, and access developer APIs."
+        />
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
         <link
-            href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@700&display=swap"
+            href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700&family=JetBrains+Mono:wght@400;500;600&display=swap"
             rel="stylesheet"
         />
         <style>
@@ -20,182 +22,1354 @@
             }
 
             :root {
-                --bg: #0a0e17;
-                --text: #e8edf5;
-                --accent: #00d9ff;
+                --bg: #06090f;
+                --bg-card: rgba(12, 17, 28, 0.7);
+                --border: rgba(255, 255, 255, 0.06);
+                --text: #e2e8f0;
+                --text-dim: rgba(226, 232, 240, 0.5);
+                --text-muted: rgba(226, 232, 240, 0.3);
+                --accent: #00d4ff;
+                --accent-glow: rgba(0, 212, 255, 0.15);
+                --accent-warm: #34d399;
+                --accent-orange: #fb923c;
+            }
+
+            html {
+                scroll-behavior: smooth;
             }
 
             body {
-                font-family: "Space Mono", monospace;
+                font-family: "DM Sans", sans-serif;
                 background: var(--bg);
                 color: var(--text);
-                overflow: hidden;
+                overflow-x: hidden;
+                -webkit-font-smoothing: antialiased;
+            }
+
+            /* ============================================
+               SECTION 1: HERO — FULL VIEWPORT
+            ============================================ */
+            .hero {
+                position: relative;
                 height: 100vh;
-                width: 100vw;
+                width: 100%;
+                overflow: hidden;
+                display: flex;
+                flex-direction: column;
             }
 
-            /* Full screen canvas */
             #routingCanvas {
-                position: fixed;
+                position: absolute;
                 top: 0;
                 left: 0;
                 width: 100%;
                 height: 100%;
-                display: block;
             }
 
-            /* Content overlay */
-            .content-overlay {
-                position: fixed;
-                top: 0;
+            /* Gradient overlays for readability */
+            .hero::after {
+                content: "";
+                position: absolute;
+                bottom: 0;
                 left: 0;
                 width: 100%;
-                height: 100%;
+                height: 40%;
+                background: linear-gradient(to top, var(--bg), transparent);
+                pointer-events: none;
+                z-index: 2;
+            }
+
+            .hero-overlay {
+                position: relative;
+                z-index: 10;
                 display: flex;
                 flex-direction: column;
                 justify-content: space-between;
+                height: 100%;
                 pointer-events: none;
-                z-index: 10;
             }
 
-            /* Header */
-            header {
-                padding: 2rem;
+            /* Nav */
+            .nav {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                padding: 1.5rem 2.5rem;
                 pointer-events: auto;
             }
 
             .logo {
-                font-size: 1.75rem;
-                font-weight: 700;
+                font-family: "JetBrains Mono", monospace;
+                font-size: 1.25rem;
+                font-weight: 600;
                 letter-spacing: -0.02em;
                 color: var(--text);
-                text-shadow: 0 2px 20px rgba(0, 0, 0, 0.5);
             }
 
             .logo span {
                 color: var(--accent);
             }
 
-            /* Center content */
-            .center-content {
+            .nav-links {
+                display: flex;
+                gap: 2rem;
+                align-items: center;
+            }
+
+            .nav-links a {
+                color: var(--text-dim);
+                text-decoration: none;
+                font-size: 0.85rem;
+                font-weight: 500;
+                letter-spacing: 0.03em;
+                text-transform: uppercase;
+                transition: color 0.2s;
+            }
+
+            .nav-links a:hover {
+                color: var(--accent);
+            }
+
+            .nav-links .notify-btn {
+                background: rgba(0, 212, 255, 0.1);
+                border: 1px solid rgba(0, 212, 255, 0.25);
+                color: var(--accent);
+                padding: 0.5rem 1.25rem;
+                border-radius: 6px;
+                font-size: 0.8rem;
+                font-weight: 600;
+                cursor: pointer;
+                transition: all 0.3s;
+                text-transform: uppercase;
+                letter-spacing: 0.05em;
+            }
+
+            .nav-links .notify-btn:hover {
+                background: rgba(0, 212, 255, 0.2);
+                border-color: var(--accent);
+                box-shadow: 0 0 20px rgba(0, 212, 255, 0.15);
+            }
+
+            /* Hero center */
+            .hero-center {
+                flex: 1;
                 display: flex;
                 flex-direction: column;
                 align-items: center;
                 justify-content: center;
                 text-align: center;
-                padding: 2rem;
+                padding: 0 2rem;
                 pointer-events: auto;
             }
 
-            .cta-button {
+            .hero-badge {
+                display: inline-flex;
+                align-items: center;
+                gap: 0.5rem;
+                background: rgba(0, 212, 255, 0.08);
+                border: 1px solid rgba(0, 212, 255, 0.15);
+                border-radius: 100px;
+                padding: 0.4rem 1rem;
+                font-size: 0.75rem;
+                font-weight: 500;
+                color: var(--accent);
+                letter-spacing: 0.04em;
+                text-transform: uppercase;
+                margin-bottom: 1.5rem;
+                animation: fadeInDown 0.8s ease both;
+            }
+
+            .hero-badge .dot {
+                width: 6px;
+                height: 6px;
+                border-radius: 50%;
+                background: var(--accent);
+                animation: pulse-dot 2s ease infinite;
+            }
+
+            @keyframes pulse-dot {
+                0%,
+                100% {
+                    opacity: 1;
+                }
+                50% {
+                    opacity: 0.3;
+                }
+            }
+
+            .hero-title {
+                font-size: clamp(2.5rem, 6vw, 4.5rem);
+                font-weight: 700;
+                line-height: 1.08;
+                letter-spacing: -0.035em;
+                max-width: 720px;
+                margin-bottom: 1.25rem;
+                animation: fadeInUp 0.8s ease 0.1s both;
+            }
+
+            .hero-title .highlight {
+                background: linear-gradient(
+                    135deg,
+                    var(--accent),
+                    var(--accent-warm)
+                );
+                -webkit-background-clip: text;
+                -webkit-text-fill-color: transparent;
+                background-clip: text;
+            }
+
+            .hero-sub {
+                font-size: 1.1rem;
+                color: var(--text-dim);
+                max-width: 520px;
+                line-height: 1.65;
+                margin-bottom: 2.5rem;
+                font-weight: 400;
+                animation: fadeInUp 0.8s ease 0.2s both;
+            }
+
+            /* Coordinate search teaser */
+            .search-teaser {
+                position: relative;
+                width: 100%;
+                max-width: 560px;
+                animation: fadeInUp 0.8s ease 0.35s both;
+            }
+
+            .search-teaser input {
+                width: 100%;
+                background: var(--bg-card);
+                border: 1px solid var(--border);
+                border-radius: 12px;
+                padding: 1.1rem 1.5rem;
+                padding-right: 8rem;
+                font-family: "JetBrains Mono", monospace;
+                font-size: 0.9rem;
+                color: var(--text);
+                outline: none;
+                transition:
+                    border-color 0.3s,
+                    box-shadow 0.3s;
+                backdrop-filter: blur(20px);
+                -webkit-backdrop-filter: blur(20px);
+            }
+
+            .search-teaser input::placeholder {
+                color: var(--text-muted);
+            }
+
+            .search-teaser input:focus {
+                border-color: rgba(0, 212, 255, 0.3);
+                box-shadow:
+                    0 0 0 4px rgba(0, 212, 255, 0.06),
+                    0 8px 32px rgba(0, 0, 0, 0.3);
+            }
+
+            .search-teaser .search-btn {
+                position: absolute;
+                right: 6px;
+                top: 50%;
+                transform: translateY(-50%);
                 background: var(--accent);
                 color: var(--bg);
-                padding: 1.25rem 2.5rem;
-                border-radius: 8px;
-                text-decoration: none;
-                font-weight: 700;
-                font-size: 1.125rem;
-                transition: all 0.3s;
                 border: none;
+                border-radius: 8px;
+                padding: 0.65rem 1.25rem;
+                font-family: "DM Sans", sans-serif;
+                font-size: 0.8rem;
+                font-weight: 600;
                 cursor: pointer;
-                box-shadow: 0 0 40px rgba(0, 217, 255, 0.4);
-                display: inline-flex;
+                transition: all 0.2s;
+                letter-spacing: 0.02em;
+            }
+
+            .search-teaser .search-btn:hover {
+                background: #fff;
+                box-shadow: 0 0 20px rgba(0, 212, 255, 0.3);
+            }
+
+            .search-hint {
+                margin-top: 0.75rem;
+                font-size: 0.75rem;
+                color: var(--text-muted);
+                animation: fadeInUp 0.8s ease 0.5s both;
+            }
+
+            .search-hint code {
+                font-family: "JetBrains Mono", monospace;
+                background: rgba(255, 255, 255, 0.05);
+                padding: 0.15rem 0.4rem;
+                border-radius: 4px;
+                font-size: 0.7rem;
+                color: var(--text-dim);
+            }
+
+            /* Live coordinates display */
+            .live-coords {
+                position: absolute;
+                bottom: 2.5rem;
+                left: 2.5rem;
+                z-index: 10;
+                pointer-events: auto;
+                animation: fadeIn 1s ease 0.8s both;
+            }
+
+            .live-coords .label {
+                font-size: 0.65rem;
+                text-transform: uppercase;
+                letter-spacing: 0.1em;
+                color: var(--text-muted);
+                margin-bottom: 0.35rem;
+            }
+
+            .live-coords .coords {
+                font-family: "JetBrains Mono", monospace;
+                font-size: 0.8rem;
+                color: var(--accent);
+                opacity: 0.7;
+            }
+
+            /* Scroll indicator */
+            .scroll-indicator {
+                position: absolute;
+                bottom: 2.5rem;
+                left: 50%;
+                transform: translateX(-50%);
+                z-index: 10;
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                gap: 0.5rem;
+                pointer-events: auto;
+                cursor: pointer;
+                animation: fadeIn 1s ease 1s both;
+            }
+
+            .scroll-indicator span {
+                font-size: 0.65rem;
+                text-transform: uppercase;
+                letter-spacing: 0.12em;
+                color: var(--text-muted);
+            }
+
+            .scroll-line {
+                width: 1px;
+                height: 32px;
+                background: linear-gradient(
+                    to bottom,
+                    var(--accent),
+                    transparent
+                );
+                animation: scrollPulse 2s ease infinite;
+            }
+
+            @keyframes scrollPulse {
+                0%,
+                100% {
+                    opacity: 0.3;
+                    transform: scaleY(1);
+                }
+                50% {
+                    opacity: 1;
+                    transform: scaleY(1.2);
+                }
+            }
+
+            /* Vehicle count */
+            .vehicle-count {
+                position: absolute;
+                bottom: 2.5rem;
+                right: 2.5rem;
+                z-index: 10;
+                text-align: right;
+                animation: fadeIn 1s ease 0.8s both;
+            }
+
+            .vehicle-count .label {
+                font-size: 0.65rem;
+                text-transform: uppercase;
+                letter-spacing: 0.1em;
+                color: var(--text-muted);
+                margin-bottom: 0.35rem;
+            }
+
+            .vehicle-count .number {
+                font-family: "JetBrains Mono", monospace;
+                font-size: 1.5rem;
+                font-weight: 600;
+                color: var(--accent-warm);
+                opacity: 0.7;
+            }
+
+            /* ============================================
+               SECTION 2: WHAT IS GPSCOORD
+            ============================================ */
+            .section {
+                padding: 8rem 2.5rem;
+                max-width: 1100px;
+                margin: 0 auto;
+            }
+
+            .section-label {
+                font-family: "JetBrains Mono", monospace;
+                font-size: 0.7rem;
+                text-transform: uppercase;
+                letter-spacing: 0.12em;
+                color: var(--accent);
+                margin-bottom: 1.25rem;
+                display: flex;
                 align-items: center;
                 gap: 0.75rem;
             }
 
-            .cta-button:hover {
-                background: var(--text);
-                transform: translateY(-2px);
-                box-shadow: 0 0 60px rgba(0, 217, 255, 0.6);
+            .section-label::before {
+                content: "";
+                width: 24px;
+                height: 1px;
+                background: var(--accent);
+                opacity: 0.5;
             }
 
-            .cta-button::after {
-                content: "→";
-                font-size: 1.25rem;
-                transition: transform 0.3s;
+            .section-title {
+                font-size: clamp(1.75rem, 4vw, 2.75rem);
+                font-weight: 700;
+                line-height: 1.15;
+                letter-spacing: -0.03em;
+                max-width: 640px;
+                margin-bottom: 1.5rem;
             }
 
-            .cta-button:hover::after {
-                transform: translateX(4px);
+            .section-desc {
+                font-size: 1.05rem;
+                color: var(--text-dim);
+                line-height: 1.7;
+                max-width: 560px;
+                margin-bottom: 4rem;
+            }
+
+            /* Feature grid */
+            .features-grid {
+                display: grid;
+                grid-template-columns: repeat(3, 1fr);
+                gap: 1px;
+                background: var(--border);
+                border: 1px solid var(--border);
+                border-radius: 16px;
+                overflow: hidden;
+            }
+
+            .feature-card {
+                background: var(--bg-card);
+                padding: 2.25rem;
+                transition: background 0.3s;
+                backdrop-filter: blur(10px);
+                -webkit-backdrop-filter: blur(10px);
+            }
+
+            .feature-card:hover {
+                background: rgba(12, 17, 28, 0.9);
+            }
+
+            .feature-icon {
+                font-family: "JetBrains Mono", monospace;
+                font-size: 0.7rem;
+                color: var(--accent);
+                text-transform: uppercase;
+                letter-spacing: 0.08em;
+                margin-bottom: 1.25rem;
+                display: flex;
+                align-items: center;
+                gap: 0.5rem;
+            }
+
+            .feature-icon .icon-dot {
+                width: 8px;
+                height: 8px;
+                border-radius: 2px;
+                background: var(--accent);
+                opacity: 0.5;
+            }
+
+            .feature-card h3 {
+                font-size: 1.05rem;
+                font-weight: 600;
+                margin-bottom: 0.65rem;
+                letter-spacing: -0.01em;
+            }
+
+            .feature-card p {
+                font-size: 0.875rem;
+                color: var(--text-dim);
+                line-height: 1.6;
+            }
+
+            /* ============================================
+               SECTION 3: API PREVIEW
+            ============================================ */
+            .api-section {
+                padding: 6rem 2.5rem 8rem;
+                max-width: 1100px;
+                margin: 0 auto;
+            }
+
+            .api-layout {
+                display: grid;
+                grid-template-columns: 1fr 1fr;
+                gap: 4rem;
+                align-items: center;
+            }
+
+            .api-text .section-label {
+                margin-bottom: 1rem;
+            }
+
+            .api-text h2 {
+                font-size: clamp(1.5rem, 3vw, 2.25rem);
+                font-weight: 700;
+                line-height: 1.15;
+                letter-spacing: -0.03em;
+                margin-bottom: 1.25rem;
+            }
+
+            .api-text p {
+                font-size: 0.95rem;
+                color: var(--text-dim);
+                line-height: 1.7;
+                margin-bottom: 2rem;
+            }
+
+            .api-tiers {
+                display: flex;
+                gap: 1.5rem;
+            }
+
+            .api-tier {
+                text-align: center;
+            }
+
+            .api-tier .tier-name {
+                font-size: 0.7rem;
+                text-transform: uppercase;
+                letter-spacing: 0.08em;
+                color: var(--text-muted);
+                margin-bottom: 0.35rem;
+            }
+
+            .api-tier .tier-price {
+                font-family: "JetBrains Mono", monospace;
+                font-size: 1.15rem;
+                font-weight: 600;
+                color: var(--text);
+            }
+
+            .api-tier .tier-calls {
+                font-size: 0.7rem;
+                color: var(--text-muted);
+                margin-top: 0.15rem;
+            }
+
+            /* Code block */
+            .code-block {
+                background: rgba(8, 12, 20, 0.9);
+                border: 1px solid var(--border);
+                border-radius: 12px;
+                overflow: hidden;
+            }
+
+            .code-header {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                padding: 0.75rem 1.25rem;
+                border-bottom: 1px solid var(--border);
+            }
+
+            .code-header .dots {
+                display: flex;
+                gap: 6px;
+            }
+
+            .code-header .dots span {
+                width: 10px;
+                height: 10px;
+                border-radius: 50%;
+                background: rgba(255, 255, 255, 0.08);
+            }
+
+            .code-header .filename {
+                font-family: "JetBrains Mono", monospace;
+                font-size: 0.7rem;
+                color: var(--text-muted);
+            }
+
+            .code-body {
+                padding: 1.5rem;
+                font-family: "JetBrains Mono", monospace;
+                font-size: 0.78rem;
+                line-height: 1.8;
+                overflow-x: auto;
+            }
+
+            .code-body .comment {
+                color: rgba(226, 232, 240, 0.25);
+            }
+            .code-body .key {
+                color: var(--accent);
+            }
+            .code-body .string {
+                color: var(--accent-warm);
+            }
+            .code-body .number {
+                color: var(--accent-orange);
+            }
+            .code-body .punct {
+                color: var(--text-dim);
+            }
+
+            /* ============================================
+               SECTION 4: PROGRAMMATIC SEO TEASER
+            ============================================ */
+            .pseo-section {
+                border-top: 1px solid var(--border);
+                padding: 6rem 2.5rem 8rem;
+            }
+
+            .pseo-inner {
+                max-width: 1100px;
+                margin: 0 auto;
+            }
+
+            .pseo-stats {
+                display: grid;
+                grid-template-columns: repeat(4, 1fr);
+                gap: 1px;
+                background: var(--border);
+                border: 1px solid var(--border);
+                border-radius: 12px;
+                overflow: hidden;
+                margin-top: 3.5rem;
+            }
+
+            .pseo-stat {
+                background: var(--bg-card);
+                padding: 2rem;
+                text-align: center;
+                backdrop-filter: blur(10px);
+                -webkit-backdrop-filter: blur(10px);
+            }
+
+            .pseo-stat .stat-number {
+                font-family: "JetBrains Mono", monospace;
+                font-size: clamp(1.5rem, 3vw, 2.25rem);
+                font-weight: 600;
+                color: var(--accent);
+                margin-bottom: 0.35rem;
+            }
+
+            .pseo-stat .stat-label {
+                font-size: 0.75rem;
+                color: var(--text-dim);
+                text-transform: uppercase;
+                letter-spacing: 0.06em;
+            }
+
+            /* URL preview examples */
+            .url-examples {
+                display: flex;
+                flex-wrap: wrap;
+                gap: 0.5rem;
+                margin-top: 2.5rem;
+            }
+
+            .url-pill {
+                font-family: "JetBrains Mono", monospace;
+                font-size: 0.7rem;
+                background: rgba(0, 212, 255, 0.05);
+                border: 1px solid rgba(0, 212, 255, 0.1);
+                color: var(--text-dim);
+                padding: 0.4rem 0.85rem;
+                border-radius: 100px;
+                transition: all 0.2s;
+                cursor: default;
+            }
+
+            .url-pill:hover {
+                border-color: rgba(0, 212, 255, 0.3);
+                color: var(--accent);
+                background: rgba(0, 212, 255, 0.08);
+            }
+
+            .url-pill .dim {
+                color: var(--text-muted);
+            }
+
+            /* ============================================
+               SECTION 5: CTA / FOOTER
+            ============================================ */
+            .cta-section {
+                padding: 6rem 2.5rem 4rem;
+                text-align: center;
+                position: relative;
+            }
+
+            .cta-section::before {
+                content: "";
+                position: absolute;
+                top: 0;
+                left: 50%;
+                transform: translateX(-50%);
+                width: 400px;
+                height: 400px;
+                background: radial-gradient(
+                    circle,
+                    rgba(0, 212, 255, 0.06),
+                    transparent 70%
+                );
+                pointer-events: none;
+            }
+
+            .cta-title {
+                font-size: clamp(1.5rem, 3vw, 2.25rem);
+                font-weight: 700;
+                letter-spacing: -0.03em;
+                margin-bottom: 1rem;
+            }
+
+            .cta-sub {
+                font-size: 0.95rem;
+                color: var(--text-dim);
+                margin-bottom: 2.5rem;
+                max-width: 420px;
+                margin-left: auto;
+                margin-right: auto;
+                line-height: 1.6;
+            }
+
+            /* Email form */
+            .email-form {
+                display: flex;
+                max-width: 440px;
+                margin: 0 auto 1rem;
+                gap: 0;
+                border-radius: 10px;
+                overflow: hidden;
+                border: 1px solid var(--border);
+                transition: border-color 0.3s;
+            }
+
+            .email-form:focus-within {
+                border-color: rgba(0, 212, 255, 0.3);
+                box-shadow: 0 0 0 4px rgba(0, 212, 255, 0.05);
+            }
+
+            .email-form input {
+                flex: 1;
+                background: var(--bg-card);
+                border: none;
+                padding: 0.9rem 1.25rem;
+                font-family: "DM Sans", sans-serif;
+                font-size: 0.875rem;
+                color: var(--text);
+                outline: none;
+            }
+
+            .email-form input::placeholder {
+                color: var(--text-muted);
+            }
+
+            .email-form button {
+                background: var(--accent);
+                color: var(--bg);
+                border: none;
+                padding: 0.9rem 1.75rem;
+                font-family: "DM Sans", sans-serif;
+                font-size: 0.8rem;
+                font-weight: 600;
+                cursor: pointer;
+                transition: background 0.2s;
+                white-space: nowrap;
+                letter-spacing: 0.02em;
+            }
+
+            .email-form button:hover {
+                background: #fff;
+            }
+
+            .cta-note {
+                font-size: 0.7rem;
+                color: var(--text-muted);
             }
 
             /* Footer */
             footer {
-                padding: 2rem;
+                border-top: 1px solid var(--border);
+                padding: 2.5rem;
                 display: flex;
-                justify-content: center;
+                justify-content: space-between;
                 align-items: center;
-                pointer-events: auto;
+                max-width: 1100px;
+                margin: 2rem auto 0;
             }
 
-            .powered-by {
-                font-size: 0.875rem;
-                color: rgba(232, 237, 245, 0.6);
-                display: flex;
-                align-items: center;
-                gap: 0.5rem;
-                text-shadow: 0 2px 10px rgba(0, 0, 0, 0.5);
+            footer .left {
+                font-family: "JetBrains Mono", monospace;
+                font-size: 0.7rem;
+                color: var(--text-muted);
             }
 
-            .powered-by a {
+            footer .left a {
                 color: var(--accent);
                 text-decoration: none;
-                font-weight: 700;
+                opacity: 0.6;
+                transition: opacity 0.2s;
+            }
+
+            footer .left a:hover {
+                opacity: 1;
+            }
+
+            footer .right {
+                display: flex;
+                gap: 1.5rem;
+            }
+
+            footer .right a {
+                font-size: 0.75rem;
+                color: var(--text-muted);
+                text-decoration: none;
                 transition: color 0.2s;
             }
 
-            .powered-by a:hover {
-                color: var(--text);
+            footer .right a:hover {
+                color: var(--text-dim);
             }
 
-            /* Responsive */
+            /* ============================================
+               ANIMATIONS
+            ============================================ */
+            @keyframes fadeInUp {
+                from {
+                    opacity: 0;
+                    transform: translateY(20px);
+                }
+                to {
+                    opacity: 1;
+                    transform: translateY(0);
+                }
+            }
+
+            @keyframes fadeInDown {
+                from {
+                    opacity: 0;
+                    transform: translateY(-10px);
+                }
+                to {
+                    opacity: 1;
+                    transform: translateY(0);
+                }
+            }
+
+            @keyframes fadeIn {
+                from {
+                    opacity: 0;
+                }
+                to {
+                    opacity: 1;
+                }
+            }
+
+            /* Scroll animations */
+            .reveal {
+                opacity: 0;
+                transform: translateY(30px);
+                transition:
+                    opacity 0.7s ease,
+                    transform 0.7s ease;
+            }
+
+            .reveal.visible {
+                opacity: 1;
+                transform: translateY(0);
+            }
+
+            /* ============================================
+               RESPONSIVE
+            ============================================ */
+            @media (max-width: 900px) {
+                .features-grid {
+                    grid-template-columns: 1fr;
+                }
+
+                .api-layout {
+                    grid-template-columns: 1fr;
+                    gap: 3rem;
+                }
+
+                .pseo-stats {
+                    grid-template-columns: repeat(2, 1fr);
+                }
+            }
+
             @media (max-width: 640px) {
-                .logo {
-                    font-size: 1.5rem;
+                .nav {
+                    padding: 1.25rem 1.5rem;
                 }
 
-                .cta-button {
-                    font-size: 1rem;
-                    padding: 1rem 2rem;
+                .nav-links a:not(.notify-btn) {
+                    display: none;
                 }
 
-                header,
+                .section,
+                .api-section,
+                .pseo-section,
+                .cta-section {
+                    padding-left: 1.5rem;
+                    padding-right: 1.5rem;
+                }
+
+                .live-coords,
+                .vehicle-count {
+                    display: none;
+                }
+
+                .pseo-stats {
+                    grid-template-columns: 1fr 1fr;
+                }
+
+                .api-tiers {
+                    flex-wrap: wrap;
+                }
+
                 footer {
-                    padding: 1.5rem;
+                    flex-direction: column;
+                    gap: 1rem;
+                    text-align: center;
                 }
             }
         </style>
     </head>
     <body>
-        <canvas id="routingCanvas"></canvas>
+        <!-- ========== HERO ========== -->
+        <section class="hero" id="top">
+            <canvas id="routingCanvas"></canvas>
+            <div class="hero-overlay">
+                <nav class="nav">
+                    <div class="logo">gps<span>coord</span></div>
+                    <div class="nav-links">
+                        <a href="#features">Features</a>
+                        <a href="#api">API</a>
+                        <a href="#notify" class="notify-btn"
+                            >Get Early Access</a
+                        >
+                    </div>
+                </nav>
 
-        <div class="content-overlay">
-            <header>
-                <div class="logo">GPS<span> Coord</span></div>
-            </header>
+                <div class="hero-center">
+                    <div class="hero-badge">
+                        <span class="dot"></span>
+                        Launching 2026
+                    </div>
+                    <h1 class="hero-title">
+                        Every coordinate on Earth,<br />
+                        <span class="highlight">one search away.</span>
+                    </h1>
+                    <p class="hero-sub">
+                        Precision coordinate utilities, real-time conversion
+                        tools, and developer APIs — built for surveyors,
+                        engineers, drone operators, and anyone who works with
+                        location data.
+                    </p>
+                    <div class="search-teaser">
+                        <input
+                            type="text"
+                            placeholder="Search any place, address, or coordinates..."
+                            id="searchInput"
+                        />
+                        <button class="search-btn" onclick="handleSearch()">
+                            Look up
+                        </button>
+                    </div>
+                    <p class="search-hint">
+                        Try <code>29.5688° N, 97.9644° W</code> or
+                        <code>Seguin, TX</code> or
+                        <code>UTM 14R 597842 3270738</code>
+                    </p>
+                </div>
 
-            <div class="center-content">
-                <a href="https://ampersandboxdesign.com" class="cta-button"
-                    >Discover on [&]</a
+                <div class="live-coords">
+                    <div class="label">Your Approximate Location</div>
+                    <div class="coords" id="userCoords">Detecting...</div>
+                </div>
+
+                <div
+                    class="scroll-indicator"
+                    onclick="
+                        document.getElementById('features').scrollIntoView()
+                    "
                 >
+                    <span>Explore</span>
+                    <div class="scroll-line"></div>
+                </div>
+
+                <div class="vehicle-count">
+                    <div class="label">Active Pathfinders</div>
+                    <div class="number">12</div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ========== FEATURES ========== -->
+        <section class="section" id="features">
+            <div class="reveal">
+                <div class="section-label">What we're building</div>
+                <h2 class="section-title">
+                    The coordinate utility the internet deserves.
+                </h2>
+                <p class="section-desc">
+                    GPSCoord combines the precision of professional GIS tools
+                    with the speed and simplicity of a modern web app. Every
+                    location on the planet, every format, every conversion —
+                    instantly.
+                </p>
             </div>
 
-            <footer>
-                <div class="powered-by">
-                    © <span id="year"></span> GPSCoord.com ... Powered by
-                    <a href="https://ampersandboxdesign.com" target="_blank"
-                        >[&amp;]</a
-                    >
+            <div class="features-grid reveal">
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <span class="icon-dot"></span>
+                        Lookup
+                    </div>
+                    <h3>Coordinate Finder</h3>
+                    <p>
+                        Enter any place, address, or landmark and instantly get
+                        GPS coordinates in DD, DMS, UTM, MGRS, and Plus Code
+                        formats.
+                    </p>
                 </div>
-            </footer>
-        </div>
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <span
+                            class="icon-dot"
+                            style="background: var(--accent-warm)"
+                        ></span>
+                        Convert
+                    </div>
+                    <h3>Format Converter</h3>
+                    <p>
+                        Seamlessly convert between decimal degrees,
+                        degrees-minutes-seconds, UTM, MGRS, and What3Words.
+                        Paste any format, get all the others.
+                    </p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <span
+                            class="icon-dot"
+                            style="background: var(--accent-orange)"
+                        ></span>
+                        Calculate
+                    </div>
+                    <h3>Distance & Bearing</h3>
+                    <p>
+                        Haversine or Vincenty distance between any two points.
+                        Get bearing, midpoint, and intermediate waypoints for
+                        route planning.
+                    </p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <span
+                            class="icon-dot"
+                            style="background: #a78bfa"
+                        ></span>
+                        Elevation
+                    </div>
+                    <h3>Elevation Profiles</h3>
+                    <p>
+                        SRTM 30m elevation data for any point on Earth. Generate
+                        elevation profiles between coordinates for terrain
+                        analysis.
+                    </p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <span
+                            class="icon-dot"
+                            style="background: #f472b6"
+                        ></span>
+                        Explore
+                    </div>
+                    <h3>Location Intelligence</h3>
+                    <p>
+                        Timezone, country, administrative region, nearest city,
+                        and surrounding points of interest for any coordinate
+                        pair.
+                    </p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <span
+                            class="icon-dot"
+                            style="background: #fbbf24"
+                        ></span>
+                        Batch
+                    </div>
+                    <h3>Bulk Processing</h3>
+                    <p>
+                        Upload a CSV of addresses or coordinates. Get geocoded
+                        results, conversions, and elevation data in bulk. Export
+                        to any format.
+                    </p>
+                </div>
+            </div>
+        </section>
 
+        <!-- ========== API ========== -->
+        <section class="api-section" id="api">
+            <div class="api-layout">
+                <div class="api-text reveal">
+                    <div class="section-label">For Developers</div>
+                    <h2>A coordinate API that doesn't cost a fortune.</h2>
+                    <p>
+                        Google Maps charges $5–$7 per 1,000 geocoding calls.
+                        We're building an alternative at a fraction of the cost,
+                        powered by open data (GeoNames, OpenStreetMap, SRTM)
+                        with enterprise-grade reliability.
+                    </p>
+                    <div class="api-tiers">
+                        <div class="api-tier">
+                            <div class="tier-name">Free</div>
+                            <div class="tier-price">$0</div>
+                            <div class="tier-calls">100 calls/day</div>
+                        </div>
+                        <div class="api-tier">
+                            <div class="tier-name">Pro</div>
+                            <div class="tier-price">$19</div>
+                            <div class="tier-calls">5K calls/day</div>
+                        </div>
+                        <div class="api-tier">
+                            <div class="tier-name">Enterprise</div>
+                            <div class="tier-price">$79</div>
+                            <div class="tier-calls">50K calls/day</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="code-block reveal">
+                    <div class="code-header">
+                        <div class="dots">
+                            <span></span><span></span><span></span>
+                        </div>
+                        <div class="filename">api-example.sh</div>
+                    </div>
+                    <div class="code-body">
+                        <span class="comment"
+                            ># Look up coordinates for any place</span
+                        >
+                        <span class="key">GET</span>
+                        <span class="string">/api/v1/geocode</span
+                        ><span class="punct">?</span
+                        ><span class="key">place</span
+                        ><span class="punct">=</span
+                        ><span class="string">Seguin, TX</span>
+
+                        <span class="punct">{</span>
+                        <span class="key">"lat"</span
+                        ><span class="punct">:</span>
+                        <span class="number">29.5688</span
+                        ><span class="punct">,</span>
+                        <span class="key">"lng"</span
+                        ><span class="punct">:</span>
+                        <span class="number">-97.9644</span
+                        ><span class="punct">,</span>
+                        <span class="key">"elevation_m"</span
+                        ><span class="punct">:</span>
+                        <span class="number">160</span
+                        ><span class="punct">,</span>
+                        <span class="key">"timezone"</span
+                        ><span class="punct">:</span>
+                        <span class="string">"America/Chicago"</span
+                        ><span class="punct">,</span>
+                        <span class="key">"formats"</span
+                        ><span class="punct">: {</span>
+                        <span class="key">"dms"</span
+                        ><span class="punct">:</span>
+                        <span class="string">"29°34'7.7\"N 97°57'51.8\"W"</span
+                        ><span class="punct">,</span>
+                        <span class="key">"utm"</span
+                        ><span class="punct">:</span>
+                        <span class="string">"14R 597842 3270738"</span
+                        ><span class="punct">,</span>
+                        <span class="key">"mgrs"</span
+                        ><span class="punct">:</span>
+                        <span class="string">"14RPU9784270738"</span>
+                        <span class="punct">}</span>
+                        <span class="punct">}</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ========== PROGRAMMATIC SEO TEASER ========== -->
+        <section class="pseo-section" id="coverage">
+            <div class="pseo-inner">
+                <div class="reveal">
+                    <div class="section-label">Global Coverage</div>
+                    <h2 class="section-title">
+                        A page for every place on Earth.
+                    </h2>
+                    <p class="section-desc">
+                        We're building coordinate pages for every city,
+                        landmark, airport, zip code, and point of interest
+                        worldwide — powered by GeoNames, OpenStreetMap, and SRTM
+                        elevation data.
+                    </p>
+                </div>
+
+                <div class="pseo-stats reveal">
+                    <div class="pseo-stat">
+                        <div class="stat-number">200K+</div>
+                        <div class="stat-label">Location Pages</div>
+                    </div>
+                    <div class="pseo-stat">
+                        <div class="stat-number">195</div>
+                        <div class="stat-label">Countries</div>
+                    </div>
+                    <div class="pseo-stat">
+                        <div class="stat-number">6</div>
+                        <div class="stat-label">Coord Formats</div>
+                    </div>
+                    <div class="pseo-stat">
+                        <div class="stat-number">&lt;50ms</div>
+                        <div class="stat-label">API Response</div>
+                    </div>
+                </div>
+
+                <div class="url-examples reveal">
+                    <div class="url-pill">
+                        <span class="dim">gpscoord.com/</span>tokyo
+                    </div>
+                    <div class="url-pill">
+                        <span class="dim">gpscoord.com/</span>us/texas/seguin
+                    </div>
+                    <div class="url-pill">
+                        <span class="dim">gpscoord.com/</span>29.5688/-97.9644
+                    </div>
+                    <div class="url-pill">
+                        <span class="dim">gpscoord.com/</span>elevation/denver
+                    </div>
+                    <div class="url-pill">
+                        <span class="dim">gpscoord.com/</span>airport/KJFK
+                    </div>
+                    <div class="url-pill">
+                        <span class="dim">gpscoord.com/</span>convert/utm-to-dd
+                    </div>
+                    <div class="url-pill">
+                        <span class="dim">gpscoord.com/</span
+                        >distance/paris/london
+                    </div>
+                    <div class="url-pill">
+                        <span class="dim">gpscoord.com/</span>zip/78155
+                    </div>
+                    <div class="url-pill">
+                        <span class="dim">gpscoord.com/</span
+                        >near/29.5688/-97.9644
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ========== CTA ========== -->
+        <section class="cta-section" id="notify">
+            <h2 class="cta-title reveal">Be the first to know.</h2>
+            <p class="cta-sub reveal">
+                We're building in public. Get notified when GPSCoord launches —
+                with early access to the API and Pro tools.
+            </p>
+            <div class="email-form reveal">
+                <input type="email" placeholder="you@company.com" />
+                <button>Notify Me</button>
+            </div>
+            <p class="cta-note reveal">
+                No spam. Just launch updates and API docs.
+            </p>
+        </section>
+
+        <!-- ========== FOOTER ========== -->
+        <footer>
+            <div class="left">
+                &copy; <span id="year"></span> GPSCoord.com&ensp;·&ensp;Powered
+                by
+                <a href="https://ampersandboxdesign.com" target="_blank"
+                    >[&amp;]</a
+                >
+            </div>
+            <div class="right">
+                <a href="https://ampersandboxdesign.com" target="_blank"
+                    >Ampersand Box</a
+                >
+                <a href="#">GitHub</a>
+                <a href="#">Twitter</a>
+            </div>
+        </footer>
+
+        <!-- ========== SCRIPTS ========== -->
         <script>
             document.getElementById("year").textContent =
                 new Date().getFullYear();
 
-            // Spherical Grid with Dijkstra Pathfinding - 12 Vehicles
+            // Geolocation
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(
+                    (pos) => {
+                        const lat = pos.coords.latitude.toFixed(4);
+                        const lng = pos.coords.longitude.toFixed(4);
+                        document.getElementById("userCoords").textContent =
+                            `${lat}°, ${lng}°`;
+                    },
+                    () => {
+                        document.getElementById("userCoords").textContent =
+                            "29.5688°, -97.9644°";
+                    },
+                );
+            }
+
+            // Search teaser interaction
+            function handleSearch() {
+                const val = document.getElementById("searchInput").value;
+                if (val.trim()) {
+                    alert(
+                        "GPSCoord is launching soon! Sign up below to get early access.",
+                    );
+                    document
+                        .getElementById("notify")
+                        .scrollIntoView({ behavior: "smooth" });
+                }
+            }
+
+            document
+                .getElementById("searchInput")
+                .addEventListener("keydown", (e) => {
+                    if (e.key === "Enter") handleSearch();
+                });
+
+            // Scroll reveal
+            const observer = new IntersectionObserver(
+                (entries) => {
+                    entries.forEach((entry) => {
+                        if (entry.isIntersecting) {
+                            entry.target.classList.add("visible");
+                        }
+                    });
+                },
+                { threshold: 0.1, rootMargin: "0px 0px -40px 0px" },
+            );
+            document
+                .querySelectorAll(".reveal")
+                .forEach((el) => observer.observe(el));
+
+            // ============================================
+            // GLOBE ANIMATION (preserved & enhanced)
+            // ============================================
             class SphereRouter {
                 constructor(canvas) {
                     this.canvas = canvas;
@@ -207,239 +1381,182 @@
                     this.vehicles = [];
                     this.rotation = 0;
 
-                    // Vehicle colors - vibrant palette
                     this.vehicleColors = [
                         "#00ff88",
                         "#ff3366",
                         "#00d9ff",
                         "#ffaa00",
                         "#ff0099",
-                        "#00ffff",
+                        "#00ffcc",
                         "#ff6600",
-                        "#9933ff",
-                        "#ffff00",
-                        "#00ff00",
-                        "#ff0066",
-                        "#0099ff",
+                        "#9966ff",
+                        "#00ccff",
+                        "#ffcc00",
+                        "#ff3399",
+                        "#66ff33",
                     ];
 
                     this.resize();
-                    this.generateSphere();
-                    this.initVehicles();
-
                     window.addEventListener("resize", () => this.resize());
+                    this.init();
                     this.animate();
                 }
 
                 resize() {
-                    this.width = window.innerWidth;
-                    this.height = window.innerHeight;
-                    this.canvas.width = this.width;
-                    this.canvas.height = this.height;
+                    this.width = this.canvas.width = window.innerWidth;
+                    this.height = this.canvas.height = window.innerHeight;
                 }
 
-                generateSphere() {
-                    // Create a massive 3D sphere that projects to 2D
-                    const radius = Math.min(this.width, this.height) * 0.6;
-                    const rings = 12; // Latitude rings
-                    const segments = 16; // Longitude segments
+                init() {
+                    this.nodes = [];
+                    this.edges = [];
+                    this.vehicles = [];
 
-                    // Generate sphere nodes in 3D space
-                    for (let ring = 0; ring < rings; ring++) {
-                        const phi = (Math.PI * ring) / (rings - 1); // 0 to π
-                        const y3d = Math.cos(phi);
-                        const ringRadius = Math.sin(phi);
+                    const radius = Math.min(this.width, this.height) * 0.35;
+                    const rings = 12;
+                    const nodesPerRing = 18;
 
-                        for (let seg = 0; seg < segments; seg++) {
-                            const theta = (2 * Math.PI * seg) / segments; // 0 to 2π
-                            const x3d = ringRadius * Math.cos(theta);
-                            const z3d = ringRadius * Math.sin(theta);
-
+                    for (let i = 0; i < rings; i++) {
+                        const phi = (Math.PI * (i + 1)) / (rings + 1);
+                        for (let j = 0; j < nodesPerRing; j++) {
+                            const theta = (2 * Math.PI * j) / nodesPerRing;
                             this.nodes.push({
-                                id: ring * segments + seg,
-                                x3d: x3d * radius,
-                                y3d: y3d * radius,
-                                z3d: z3d * radius,
+                                x3d: radius * Math.sin(phi) * Math.cos(theta),
+                                y3d: radius * Math.cos(phi),
+                                z3d: radius * Math.sin(phi) * Math.sin(theta),
                                 x: 0,
                                 y: 0,
-                                connections: [],
+                                z: 0,
+                                scale: 1,
                             });
                         }
                     }
 
-                    // Create edges between nearby nodes
-                    this.nodes.forEach((node, idx) => {
-                        const ring = Math.floor(idx / segments);
-                        const seg = idx % segments;
-
-                        // Connect to next in same ring
-                        const nextSeg = (seg + 1) % segments;
-                        const nextInRing = ring * segments + nextSeg;
-                        if (nextInRing < this.nodes.length) {
-                            this.addEdge(node, this.nodes[nextInRing]);
-                        }
-
-                        // Connect to node in next ring
-                        if (ring < rings - 1) {
-                            const nextRing = (ring + 1) * segments + seg;
-                            this.addEdge(node, this.nodes[nextRing]);
-
-                            // Diagonal connections for more paths
-                            const diagNext = (ring + 1) * segments + nextSeg;
-                            if (diagNext < this.nodes.length) {
-                                this.addEdge(node, this.nodes[diagNext]);
-                            }
-                        }
-                    });
-                }
-
-                addEdge(nodeA, nodeB) {
-                    const distance = Math.sqrt(
-                        Math.pow(nodeB.x3d - nodeA.x3d, 2) +
-                            Math.pow(nodeB.y3d - nodeA.y3d, 2) +
-                            Math.pow(nodeB.z3d - nodeA.z3d, 2),
-                    );
-
-                    this.edges.push({
-                        from: nodeA.id,
-                        to: nodeB.id,
-                        weight: distance,
-                    });
-
-                    nodeA.connections.push({
-                        node: nodeB.id,
-                        weight: distance,
-                    });
-                    nodeB.connections.push({
-                        node: nodeA.id,
-                        weight: distance,
-                    });
-                }
-
-                initVehicles() {
-                    // Create 12 vehicles with random starting positions
-                    for (let i = 0; i < 12; i++) {
-                        const startNode = Math.floor(
-                            Math.random() * this.nodes.length,
-                        );
-                        const endNode = Math.floor(
-                            Math.random() * this.nodes.length,
-                        );
-
-                        const vehicle = {
-                            id: i,
-                            color: this.vehicleColors[i],
-                            currentNode: startNode,
-                            targetNode: endNode,
-                            path: [],
-                            pathIndex: 0,
-                            progress: 0,
-                            speed: 0.008 + Math.random() * 0.008, // Vary speeds
-                        };
-
-                        vehicle.path = this.dijkstra(
-                            vehicle.currentNode,
-                            vehicle.targetNode,
-                        );
-                        this.vehicles.push(vehicle);
-                    }
-                }
-
-                dijkstra(startId, endId) {
-                    const distances = {};
-                    const previous = {};
-                    const unvisited = new Set();
-
-                    this.nodes.forEach((node) => {
-                        distances[node.id] = Infinity;
-                        previous[node.id] = null;
-                        unvisited.add(node.id);
-                    });
-
-                    distances[startId] = 0;
-
-                    while (unvisited.size > 0) {
-                        let current = null;
-                        let minDistance = Infinity;
-
-                        unvisited.forEach((nodeId) => {
-                            if (distances[nodeId] < minDistance) {
-                                minDistance = distances[nodeId];
-                                current = nodeId;
-                            }
-                        });
-
-                        if (current === null || current === endId) break;
-
-                        unvisited.delete(current);
-
-                        const currentNode = this.nodes[current];
-                        currentNode.connections.forEach((connection) => {
-                            if (unvisited.has(connection.node)) {
-                                const alt =
-                                    distances[current] + connection.weight;
-                                if (alt < distances[connection.node]) {
-                                    distances[connection.node] = alt;
-                                    previous[connection.node] = current;
+                    // Connect nodes
+                    for (let i = 0; i < rings; i++) {
+                        for (let j = 0; j < nodesPerRing; j++) {
+                            const current = i * nodesPerRing + j;
+                            const next =
+                                i * nodesPerRing + ((j + 1) % nodesPerRing);
+                            this.edges.push({
+                                from: current,
+                                to: next,
+                                weight: 1 + Math.random() * 3,
+                            });
+                            if (i < rings - 1) {
+                                const below = (i + 1) * nodesPerRing + j;
+                                this.edges.push({
+                                    from: current,
+                                    to: below,
+                                    weight: 1 + Math.random() * 3,
+                                });
+                                if (Math.random() > 0.5) {
+                                    const belowNext =
+                                        (i + 1) * nodesPerRing +
+                                        ((j + 1) % nodesPerRing);
+                                    this.edges.push({
+                                        from: current,
+                                        to: belowNext,
+                                        weight: 1.5 + Math.random() * 3,
+                                    });
                                 }
                             }
+                        }
+                    }
+
+                    // Create vehicles
+                    for (let i = 0; i < 12; i++) {
+                        const start = Math.floor(
+                            Math.random() * this.nodes.length,
+                        );
+                        let end = Math.floor(Math.random() * this.nodes.length);
+                        while (end === start)
+                            end = Math.floor(Math.random() * this.nodes.length);
+                        this.vehicles.push({
+                            currentNode: start,
+                            targetNode: end,
+                            path: this.dijkstra(start, end),
+                            pathIndex: 0,
+                            progress: 0,
+                            speed: 0.005 + Math.random() * 0.01,
+                            color: this.vehicleColors[
+                                i % this.vehicleColors.length
+                            ],
                         });
                     }
-
-                    // Reconstruct path
-                    const path = [];
-                    let current = endId;
-                    while (current !== null) {
-                        path.unshift(current);
-                        current = previous[current];
-                    }
-
-                    return path;
                 }
 
-                project3DTo2D(x3d, y3d, z3d) {
-                    // Rotate the sphere slowly
-                    const cosR = Math.cos(this.rotation);
-                    const sinR = Math.sin(this.rotation);
+                dijkstra(start, end) {
+                    const dist = new Array(this.nodes.length).fill(Infinity);
+                    const prev = new Array(this.nodes.length).fill(-1);
+                    const visited = new Set();
+                    dist[start] = 0;
+                    const pq = [{ node: start, dist: 0 }];
 
-                    // Rotate around Y axis
-                    const xRot = x3d * cosR - z3d * sinR;
-                    const zRot = x3d * sinR + z3d * cosR;
+                    while (pq.length > 0) {
+                        pq.sort((a, b) => a.dist - b.dist);
+                        const { node: u } = pq.shift();
+                        if (visited.has(u)) continue;
+                        visited.add(u);
+                        if (u === end) break;
 
-                    // Simple perspective projection
+                        for (const edge of this.edges) {
+                            let neighbor = -1;
+                            if (edge.from === u) neighbor = edge.to;
+                            else if (edge.to === u) neighbor = edge.from;
+                            if (neighbor === -1 || visited.has(neighbor))
+                                continue;
+                            const newDist = dist[u] + edge.weight;
+                            if (newDist < dist[neighbor]) {
+                                dist[neighbor] = newDist;
+                                prev[neighbor] = u;
+                                pq.push({ node: neighbor, dist: newDist });
+                            }
+                        }
+                    }
+
+                    const path = [];
+                    let current = end;
+                    while (current !== -1) {
+                        path.unshift(current);
+                        current = prev[current];
+                    }
+                    return path[0] === start ? path : [start];
+                }
+
+                project3DTo2D(x, y, z) {
+                    const cos = Math.cos(this.rotation),
+                        sin = Math.sin(this.rotation);
+                    const xRot = x * cos - z * sin;
+                    const zRot = x * sin + z * cos;
                     const perspective = 1000;
                     const scale = perspective / (perspective + zRot);
-
                     return {
                         x: this.width / 2 + xRot * scale,
-                        y: this.height / 2 + y3d * scale,
+                        y: this.height / 2 + y * scale,
                         z: zRot,
-                        scale: scale,
+                        scale,
                     };
                 }
 
                 updateVehicles() {
-                    this.vehicles.forEach((vehicle) => {
-                        if (vehicle.path.length === 0) return;
-
-                        vehicle.progress += vehicle.speed;
-
-                        if (vehicle.progress >= 1) {
-                            vehicle.progress = 0;
-                            vehicle.pathIndex++;
-
-                            if (vehicle.pathIndex >= vehicle.path.length - 1) {
-                                // Reached destination, pick new random target
+                    this.vehicles.forEach((v) => {
+                        if (v.path.length === 0) return;
+                        v.progress += v.speed;
+                        if (v.progress >= 1) {
+                            v.progress = 0;
+                            v.pathIndex++;
+                            if (v.pathIndex >= v.path.length - 1) {
                                 const newTarget = Math.floor(
                                     Math.random() * this.nodes.length,
                                 );
-                                vehicle.currentNode = vehicle.targetNode;
-                                vehicle.targetNode = newTarget;
-                                vehicle.path = this.dijkstra(
-                                    vehicle.currentNode,
-                                    vehicle.targetNode,
+                                v.currentNode = v.targetNode;
+                                v.targetNode = newTarget;
+                                v.path = this.dijkstra(
+                                    v.currentNode,
+                                    v.targetNode,
                                 );
-                                vehicle.pathIndex = 0;
+                                v.pathIndex = 0;
                             }
                         }
                     });
@@ -448,176 +1565,133 @@
                 draw() {
                     this.ctx.clearRect(0, 0, this.width, this.height);
 
-                    // Update node projections
-                    this.nodes.forEach((node) => {
-                        const proj = this.project3DTo2D(
-                            node.x3d,
-                            node.y3d,
-                            node.z3d,
-                        );
-                        node.x = proj.x;
-                        node.y = proj.y;
-                        node.z = proj.z;
-                        node.scale = proj.scale;
+                    this.nodes.forEach((n) => {
+                        const p = this.project3DTo2D(n.x3d, n.y3d, n.z3d);
+                        n.x = p.x;
+                        n.y = p.y;
+                        n.z = p.z;
+                        n.scale = p.scale;
                     });
 
-                    // Sort nodes and edges by Z depth for proper rendering
-                    const sortedNodes = [...this.nodes].sort(
-                        (a, b) => a.z - b.z,
-                    );
+                    const maxR = Math.min(this.width, this.height) * 0.6;
+
+                    // Edges
                     const sortedEdges = this.edges
-                        .map((edge) => ({
-                            ...edge,
+                        .map((e) => ({
+                            ...e,
                             avgZ:
-                                (this.nodes[edge.from].z +
-                                    this.nodes[edge.to].z) /
-                                2,
+                                (this.nodes[e.from].z + this.nodes[e.to].z) / 2,
                         }))
                         .sort((a, b) => a.avgZ - b.avgZ);
 
-                    // Draw edges (back to front) - all edges visible with depth-based opacity
-                    sortedEdges.forEach((edge) => {
-                        const fromNode = this.nodes[edge.from];
-                        const toNode = this.nodes[edge.to];
-
-                        // Calculate opacity based on depth (further = dimmer, but still visible)
-                        const avgZ = (fromNode.z + toNode.z) / 2;
-                        // Map z from -radius to +radius to opacity 0.15 to 0.4
-                        const maxRadius =
-                            Math.min(this.width, this.height) * 0.6;
-                        const normalizedZ =
-                            (avgZ + maxRadius) / (maxRadius * 2); // 0 to 1
-                        const opacity = 0.15 + (1 - normalizedZ) * 0.25; // 0.15 (back) to 0.4 (front)
-
-                        this.ctx.strokeStyle = `rgba(139, 148, 168, ${opacity})`;
+                    sortedEdges.forEach((e) => {
+                        const f = this.nodes[e.from],
+                            t = this.nodes[e.to];
+                        const nz = ((f.z + t.z) / 2 + maxR) / (maxR * 2);
+                        this.ctx.strokeStyle = `rgba(139, 148, 168, ${0.08 + (1 - nz) * 0.15})`;
                         this.ctx.lineWidth = 1;
-
                         this.ctx.beginPath();
-                        this.ctx.moveTo(fromNode.x, fromNode.y);
-                        this.ctx.lineTo(toNode.x, toNode.y);
+                        this.ctx.moveTo(f.x, f.y);
+                        this.ctx.lineTo(t.x, t.y);
                         this.ctx.stroke();
                     });
 
-                    // Draw active paths for each vehicle
-                    this.vehicles.forEach((vehicle) => {
-                        if (vehicle.path.length < 2) return;
-
-                        this.ctx.strokeStyle = vehicle.color;
-                        this.ctx.lineWidth = 2;
-
-                        for (let i = 0; i < vehicle.path.length - 1; i++) {
-                            const fromNode = this.nodes[vehicle.path[i]];
-                            const toNode = this.nodes[vehicle.path[i + 1]];
-
-                            const avgZ = (fromNode.z + toNode.z) / 2;
-                            const maxRadius =
-                                Math.min(this.width, this.height) * 0.6;
-                            const normalizedZ =
-                                (avgZ + maxRadius) / (maxRadius * 2);
-                            const opacity = 0.2 + (1 - normalizedZ) * 0.5; // 0.2 (back) to 0.7 (front)
-
-                            this.ctx.globalAlpha = opacity;
-
+                    // Vehicle paths
+                    this.vehicles.forEach((v) => {
+                        if (v.path.length < 2) return;
+                        this.ctx.strokeStyle = v.color;
+                        this.ctx.lineWidth = 1.5;
+                        for (let i = 0; i < v.path.length - 1; i++) {
+                            const f = this.nodes[v.path[i]],
+                                t = this.nodes[v.path[i + 1]];
+                            const nz = ((f.z + t.z) / 2 + maxR) / (maxR * 2);
+                            this.ctx.globalAlpha = 0.1 + (1 - nz) * 0.4;
                             this.ctx.beginPath();
-                            this.ctx.moveTo(fromNode.x, fromNode.y);
-                            this.ctx.lineTo(toNode.x, toNode.y);
+                            this.ctx.moveTo(f.x, f.y);
+                            this.ctx.lineTo(t.x, t.y);
                             this.ctx.stroke();
                         }
                         this.ctx.globalAlpha = 1;
                     });
 
-                    // Draw nodes (back to front) - all nodes visible
-                    sortedNodes.forEach((node) => {
-                        const maxRadius =
-                            Math.min(this.width, this.height) * 0.6;
-                        const normalizedZ =
-                            (node.z + maxRadius) / (maxRadius * 2);
-                        const opacity = 0.3 + (1 - normalizedZ) * 0.5; // 0.3 (back) to 0.8 (front)
-                        const size = 2.5 + node.scale * 1.5;
+                    // Nodes
+                    [...this.nodes]
+                        .sort((a, b) => a.z - b.z)
+                        .forEach((n) => {
+                            const nz = (n.z + maxR) / (maxR * 2);
+                            this.ctx.fillStyle = `rgba(0, 212, 255, ${0.15 + (1 - nz) * 0.4})`;
+                            this.ctx.beginPath();
+                            this.ctx.arc(
+                                n.x,
+                                n.y,
+                                1.5 + n.scale * 1.2,
+                                0,
+                                Math.PI * 2,
+                            );
+                            this.ctx.fill();
+                        });
 
-                        this.ctx.fillStyle = `rgba(0, 217, 255, ${opacity})`;
-                        this.ctx.beginPath();
-                        this.ctx.arc(node.x, node.y, size, 0, Math.PI * 2);
-                        this.ctx.fill();
-                    });
+                    // Vehicles
+                    this.vehicles.forEach((v) => {
+                        if (
+                            v.path.length < 2 ||
+                            v.pathIndex >= v.path.length - 1
+                        )
+                            return;
+                        const f = this.nodes[v.path[v.pathIndex]];
+                        const t = this.nodes[v.path[v.pathIndex + 1]];
+                        const x = f.x + (t.x - f.x) * v.progress;
+                        const y = f.y + (t.y - f.y) * v.progress;
+                        const z = f.z + (t.z - f.z) * v.progress;
+                        const nz = (z + maxR) / (maxR * 2);
+                        const op = 0.3 + (1 - nz) * 0.7;
+                        const sc = 0.5 + f.scale * 0.5;
 
-                    // Draw vehicles
-                    this.vehicles.forEach((vehicle) => {
-                        if (vehicle.path.length < 2) return;
+                        const m = v.color.match(/\w\w/g);
+                        const r = parseInt(m[0], 16),
+                            g = parseInt(m[1], 16),
+                            b = parseInt(m[2], 16);
 
-                        const currentIdx = vehicle.pathIndex;
-                        if (currentIdx >= vehicle.path.length - 1) return;
-
-                        const fromNode = this.nodes[vehicle.path[currentIdx]];
-                        const toNode = this.nodes[vehicle.path[currentIdx + 1]];
-
-                        const x =
-                            fromNode.x +
-                            (toNode.x - fromNode.x) * vehicle.progress;
-                        const y =
-                            fromNode.y +
-                            (toNode.y - fromNode.y) * vehicle.progress;
-                        const z =
-                            fromNode.z +
-                            (toNode.z - fromNode.z) * vehicle.progress;
-
-                        const maxRadius =
-                            Math.min(this.width, this.height) * 0.6;
-                        const normalizedZ = (z + maxRadius) / (maxRadius * 2);
-                        const opacity = 0.4 + (1 - normalizedZ) * 0.6; // 0.4 (back) to 1.0 (front)
-                        const scale = 0.5 + fromNode.scale * 0.5;
-
-                        // Draw vehicle glow
-                        const gradient = this.ctx.createRadialGradient(
+                        const grad = this.ctx.createRadialGradient(
                             x,
                             y,
                             0,
                             x,
                             y,
-                            25 * scale,
+                            20 * sc,
                         );
-                        const colorMatch = vehicle.color.match(/\w\w/g);
-                        const r = parseInt(colorMatch[0], 16);
-                        const g = parseInt(colorMatch[1], 16);
-                        const b = parseInt(colorMatch[2], 16);
-
-                        gradient.addColorStop(
+                        grad.addColorStop(
                             0,
-                            `rgba(${r}, ${g}, ${b}, ${opacity * 0.8})`,
+                            `rgba(${r},${g},${b},${op * 0.6})`,
                         );
-                        gradient.addColorStop(1, "rgba(0, 0, 0, 0)");
-                        this.ctx.fillStyle = gradient;
+                        grad.addColorStop(1, "rgba(0,0,0,0)");
+                        this.ctx.fillStyle = grad;
                         this.ctx.beginPath();
-                        this.ctx.arc(x, y, 25 * scale, 0, Math.PI * 2);
+                        this.ctx.arc(x, y, 20 * sc, 0, Math.PI * 2);
                         this.ctx.fill();
 
-                        // Draw vehicle
-                        this.ctx.fillStyle = vehicle.color;
-                        this.ctx.globalAlpha = opacity;
+                        this.ctx.fillStyle = v.color;
+                        this.ctx.globalAlpha = op;
                         this.ctx.beginPath();
-                        this.ctx.arc(x, y, 7 * scale, 0, Math.PI * 2);
+                        this.ctx.arc(x, y, 5 * sc, 0, Math.PI * 2);
                         this.ctx.fill();
-
-                        // Draw vehicle border
-                        this.ctx.strokeStyle = "rgba(10, 14, 23, 0.8)";
-                        this.ctx.lineWidth = 2;
+                        this.ctx.strokeStyle = "rgba(6,9,15,0.7)";
+                        this.ctx.lineWidth = 1.5;
                         this.ctx.stroke();
                         this.ctx.globalAlpha = 1;
                     });
                 }
 
                 animate() {
-                    this.rotation += 0.002; // Slow rotation
+                    this.rotation += 0.0015;
                     this.updateVehicles();
                     this.draw();
                     requestAnimationFrame(() => this.animate());
                 }
             }
 
-            // Initialize the sphere router
             window.addEventListener("DOMContentLoaded", () => {
-                const canvas = document.getElementById("routingCanvas");
-                new SphereRouter(canvas);
+                new SphereRouter(document.getElementById("routingCanvas"));
             });
         </script>
     </body>

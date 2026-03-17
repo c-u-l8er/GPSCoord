@@ -1,0 +1,624 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>
+            GPS Coord - Percision Coordination and Tracking Infrastructure
+        </title>
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+        <link
+            href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@700&display=swap"
+            rel="stylesheet"
+        />
+        <style>
+            * {
+                margin: 0;
+                padding: 0;
+                box-sizing: border-box;
+            }
+
+            :root {
+                --bg: #0a0e17;
+                --text: #e8edf5;
+                --accent: #00d9ff;
+            }
+
+            body {
+                font-family: "Space Mono", monospace;
+                background: var(--bg);
+                color: var(--text);
+                overflow: hidden;
+                height: 100vh;
+                width: 100vw;
+            }
+
+            /* Full screen canvas */
+            #routingCanvas {
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                display: block;
+            }
+
+            /* Content overlay */
+            .content-overlay {
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                display: flex;
+                flex-direction: column;
+                justify-content: space-between;
+                pointer-events: none;
+                z-index: 10;
+            }
+
+            /* Header */
+            header {
+                padding: 2rem;
+                pointer-events: auto;
+            }
+
+            .logo {
+                font-size: 1.75rem;
+                font-weight: 700;
+                letter-spacing: -0.02em;
+                color: var(--text);
+                text-shadow: 0 2px 20px rgba(0, 0, 0, 0.5);
+            }
+
+            .logo span {
+                color: var(--accent);
+            }
+
+            /* Center content */
+            .center-content {
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                justify-content: center;
+                text-align: center;
+                padding: 2rem;
+                pointer-events: auto;
+            }
+
+            .cta-button {
+                background: var(--accent);
+                color: var(--bg);
+                padding: 1.25rem 2.5rem;
+                border-radius: 8px;
+                text-decoration: none;
+                font-weight: 700;
+                font-size: 1.125rem;
+                transition: all 0.3s;
+                border: none;
+                cursor: pointer;
+                box-shadow: 0 0 40px rgba(0, 217, 255, 0.4);
+                display: inline-flex;
+                align-items: center;
+                gap: 0.75rem;
+            }
+
+            .cta-button:hover {
+                background: var(--text);
+                transform: translateY(-2px);
+                box-shadow: 0 0 60px rgba(0, 217, 255, 0.6);
+            }
+
+            .cta-button::after {
+                content: "→";
+                font-size: 1.25rem;
+                transition: transform 0.3s;
+            }
+
+            .cta-button:hover::after {
+                transform: translateX(4px);
+            }
+
+            /* Footer */
+            footer {
+                padding: 2rem;
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                pointer-events: auto;
+            }
+
+            .powered-by {
+                font-size: 0.875rem;
+                color: rgba(232, 237, 245, 0.6);
+                display: flex;
+                align-items: center;
+                gap: 0.5rem;
+                text-shadow: 0 2px 10px rgba(0, 0, 0, 0.5);
+            }
+
+            .powered-by a {
+                color: var(--accent);
+                text-decoration: none;
+                font-weight: 700;
+                transition: color 0.2s;
+            }
+
+            .powered-by a:hover {
+                color: var(--text);
+            }
+
+            /* Responsive */
+            @media (max-width: 640px) {
+                .logo {
+                    font-size: 1.5rem;
+                }
+
+                .cta-button {
+                    font-size: 1rem;
+                    padding: 1rem 2rem;
+                }
+
+                header,
+                footer {
+                    padding: 1.5rem;
+                }
+            }
+        </style>
+    </head>
+    <body>
+        <canvas id="routingCanvas"></canvas>
+
+        <div class="content-overlay">
+            <header>
+                <div class="logo">GPS<span> Coord</span></div>
+            </header>
+
+            <div class="center-content">
+                <a href="https://ampersandboxdesign.com" class="cta-button"
+                    >Discover on [&]</a
+                >
+            </div>
+
+            <footer>
+                <div class="powered-by">
+                    © <span id="year"></span> GPSCoord.com ... Powered by
+                    <a href="https://ampersandboxdesign.com" target="_blank"
+                        >[&amp;]</a
+                    >
+                </div>
+            </footer>
+        </div>
+
+        <script>
+            document.getElementById("year").textContent =
+                new Date().getFullYear();
+
+            // Spherical Grid with Dijkstra Pathfinding - 12 Vehicles
+            class SphereRouter {
+                constructor(canvas) {
+                    this.canvas = canvas;
+                    this.ctx = canvas.getContext("2d");
+                    this.width = 0;
+                    this.height = 0;
+                    this.nodes = [];
+                    this.edges = [];
+                    this.vehicles = [];
+                    this.rotation = 0;
+
+                    // Vehicle colors - vibrant palette
+                    this.vehicleColors = [
+                        "#00ff88",
+                        "#ff3366",
+                        "#00d9ff",
+                        "#ffaa00",
+                        "#ff0099",
+                        "#00ffff",
+                        "#ff6600",
+                        "#9933ff",
+                        "#ffff00",
+                        "#00ff00",
+                        "#ff0066",
+                        "#0099ff",
+                    ];
+
+                    this.resize();
+                    this.generateSphere();
+                    this.initVehicles();
+
+                    window.addEventListener("resize", () => this.resize());
+                    this.animate();
+                }
+
+                resize() {
+                    this.width = window.innerWidth;
+                    this.height = window.innerHeight;
+                    this.canvas.width = this.width;
+                    this.canvas.height = this.height;
+                }
+
+                generateSphere() {
+                    // Create a massive 3D sphere that projects to 2D
+                    const radius = Math.min(this.width, this.height) * 0.6;
+                    const rings = 12; // Latitude rings
+                    const segments = 16; // Longitude segments
+
+                    // Generate sphere nodes in 3D space
+                    for (let ring = 0; ring < rings; ring++) {
+                        const phi = (Math.PI * ring) / (rings - 1); // 0 to π
+                        const y3d = Math.cos(phi);
+                        const ringRadius = Math.sin(phi);
+
+                        for (let seg = 0; seg < segments; seg++) {
+                            const theta = (2 * Math.PI * seg) / segments; // 0 to 2π
+                            const x3d = ringRadius * Math.cos(theta);
+                            const z3d = ringRadius * Math.sin(theta);
+
+                            this.nodes.push({
+                                id: ring * segments + seg,
+                                x3d: x3d * radius,
+                                y3d: y3d * radius,
+                                z3d: z3d * radius,
+                                x: 0,
+                                y: 0,
+                                connections: [],
+                            });
+                        }
+                    }
+
+                    // Create edges between nearby nodes
+                    this.nodes.forEach((node, idx) => {
+                        const ring = Math.floor(idx / segments);
+                        const seg = idx % segments;
+
+                        // Connect to next in same ring
+                        const nextSeg = (seg + 1) % segments;
+                        const nextInRing = ring * segments + nextSeg;
+                        if (nextInRing < this.nodes.length) {
+                            this.addEdge(node, this.nodes[nextInRing]);
+                        }
+
+                        // Connect to node in next ring
+                        if (ring < rings - 1) {
+                            const nextRing = (ring + 1) * segments + seg;
+                            this.addEdge(node, this.nodes[nextRing]);
+
+                            // Diagonal connections for more paths
+                            const diagNext = (ring + 1) * segments + nextSeg;
+                            if (diagNext < this.nodes.length) {
+                                this.addEdge(node, this.nodes[diagNext]);
+                            }
+                        }
+                    });
+                }
+
+                addEdge(nodeA, nodeB) {
+                    const distance = Math.sqrt(
+                        Math.pow(nodeB.x3d - nodeA.x3d, 2) +
+                            Math.pow(nodeB.y3d - nodeA.y3d, 2) +
+                            Math.pow(nodeB.z3d - nodeA.z3d, 2),
+                    );
+
+                    this.edges.push({
+                        from: nodeA.id,
+                        to: nodeB.id,
+                        weight: distance,
+                    });
+
+                    nodeA.connections.push({
+                        node: nodeB.id,
+                        weight: distance,
+                    });
+                    nodeB.connections.push({
+                        node: nodeA.id,
+                        weight: distance,
+                    });
+                }
+
+                initVehicles() {
+                    // Create 12 vehicles with random starting positions
+                    for (let i = 0; i < 12; i++) {
+                        const startNode = Math.floor(
+                            Math.random() * this.nodes.length,
+                        );
+                        const endNode = Math.floor(
+                            Math.random() * this.nodes.length,
+                        );
+
+                        const vehicle = {
+                            id: i,
+                            color: this.vehicleColors[i],
+                            currentNode: startNode,
+                            targetNode: endNode,
+                            path: [],
+                            pathIndex: 0,
+                            progress: 0,
+                            speed: 0.008 + Math.random() * 0.008, // Vary speeds
+                        };
+
+                        vehicle.path = this.dijkstra(
+                            vehicle.currentNode,
+                            vehicle.targetNode,
+                        );
+                        this.vehicles.push(vehicle);
+                    }
+                }
+
+                dijkstra(startId, endId) {
+                    const distances = {};
+                    const previous = {};
+                    const unvisited = new Set();
+
+                    this.nodes.forEach((node) => {
+                        distances[node.id] = Infinity;
+                        previous[node.id] = null;
+                        unvisited.add(node.id);
+                    });
+
+                    distances[startId] = 0;
+
+                    while (unvisited.size > 0) {
+                        let current = null;
+                        let minDistance = Infinity;
+
+                        unvisited.forEach((nodeId) => {
+                            if (distances[nodeId] < minDistance) {
+                                minDistance = distances[nodeId];
+                                current = nodeId;
+                            }
+                        });
+
+                        if (current === null || current === endId) break;
+
+                        unvisited.delete(current);
+
+                        const currentNode = this.nodes[current];
+                        currentNode.connections.forEach((connection) => {
+                            if (unvisited.has(connection.node)) {
+                                const alt =
+                                    distances[current] + connection.weight;
+                                if (alt < distances[connection.node]) {
+                                    distances[connection.node] = alt;
+                                    previous[connection.node] = current;
+                                }
+                            }
+                        });
+                    }
+
+                    // Reconstruct path
+                    const path = [];
+                    let current = endId;
+                    while (current !== null) {
+                        path.unshift(current);
+                        current = previous[current];
+                    }
+
+                    return path;
+                }
+
+                project3DTo2D(x3d, y3d, z3d) {
+                    // Rotate the sphere slowly
+                    const cosR = Math.cos(this.rotation);
+                    const sinR = Math.sin(this.rotation);
+
+                    // Rotate around Y axis
+                    const xRot = x3d * cosR - z3d * sinR;
+                    const zRot = x3d * sinR + z3d * cosR;
+
+                    // Simple perspective projection
+                    const perspective = 1000;
+                    const scale = perspective / (perspective + zRot);
+
+                    return {
+                        x: this.width / 2 + xRot * scale,
+                        y: this.height / 2 + y3d * scale,
+                        z: zRot,
+                        scale: scale,
+                    };
+                }
+
+                updateVehicles() {
+                    this.vehicles.forEach((vehicle) => {
+                        if (vehicle.path.length === 0) return;
+
+                        vehicle.progress += vehicle.speed;
+
+                        if (vehicle.progress >= 1) {
+                            vehicle.progress = 0;
+                            vehicle.pathIndex++;
+
+                            if (vehicle.pathIndex >= vehicle.path.length - 1) {
+                                // Reached destination, pick new random target
+                                const newTarget = Math.floor(
+                                    Math.random() * this.nodes.length,
+                                );
+                                vehicle.currentNode = vehicle.targetNode;
+                                vehicle.targetNode = newTarget;
+                                vehicle.path = this.dijkstra(
+                                    vehicle.currentNode,
+                                    vehicle.targetNode,
+                                );
+                                vehicle.pathIndex = 0;
+                            }
+                        }
+                    });
+                }
+
+                draw() {
+                    this.ctx.clearRect(0, 0, this.width, this.height);
+
+                    // Update node projections
+                    this.nodes.forEach((node) => {
+                        const proj = this.project3DTo2D(
+                            node.x3d,
+                            node.y3d,
+                            node.z3d,
+                        );
+                        node.x = proj.x;
+                        node.y = proj.y;
+                        node.z = proj.z;
+                        node.scale = proj.scale;
+                    });
+
+                    // Sort nodes and edges by Z depth for proper rendering
+                    const sortedNodes = [...this.nodes].sort(
+                        (a, b) => a.z - b.z,
+                    );
+                    const sortedEdges = this.edges
+                        .map((edge) => ({
+                            ...edge,
+                            avgZ:
+                                (this.nodes[edge.from].z +
+                                    this.nodes[edge.to].z) /
+                                2,
+                        }))
+                        .sort((a, b) => a.avgZ - b.avgZ);
+
+                    // Draw edges (back to front) - all edges visible with depth-based opacity
+                    sortedEdges.forEach((edge) => {
+                        const fromNode = this.nodes[edge.from];
+                        const toNode = this.nodes[edge.to];
+
+                        // Calculate opacity based on depth (further = dimmer, but still visible)
+                        const avgZ = (fromNode.z + toNode.z) / 2;
+                        // Map z from -radius to +radius to opacity 0.15 to 0.4
+                        const maxRadius =
+                            Math.min(this.width, this.height) * 0.6;
+                        const normalizedZ =
+                            (avgZ + maxRadius) / (maxRadius * 2); // 0 to 1
+                        const opacity = 0.15 + (1 - normalizedZ) * 0.25; // 0.15 (back) to 0.4 (front)
+
+                        this.ctx.strokeStyle = `rgba(139, 148, 168, ${opacity})`;
+                        this.ctx.lineWidth = 1;
+
+                        this.ctx.beginPath();
+                        this.ctx.moveTo(fromNode.x, fromNode.y);
+                        this.ctx.lineTo(toNode.x, toNode.y);
+                        this.ctx.stroke();
+                    });
+
+                    // Draw active paths for each vehicle
+                    this.vehicles.forEach((vehicle) => {
+                        if (vehicle.path.length < 2) return;
+
+                        this.ctx.strokeStyle = vehicle.color;
+                        this.ctx.lineWidth = 2;
+
+                        for (let i = 0; i < vehicle.path.length - 1; i++) {
+                            const fromNode = this.nodes[vehicle.path[i]];
+                            const toNode = this.nodes[vehicle.path[i + 1]];
+
+                            const avgZ = (fromNode.z + toNode.z) / 2;
+                            const maxRadius =
+                                Math.min(this.width, this.height) * 0.6;
+                            const normalizedZ =
+                                (avgZ + maxRadius) / (maxRadius * 2);
+                            const opacity = 0.2 + (1 - normalizedZ) * 0.5; // 0.2 (back) to 0.7 (front)
+
+                            this.ctx.globalAlpha = opacity;
+
+                            this.ctx.beginPath();
+                            this.ctx.moveTo(fromNode.x, fromNode.y);
+                            this.ctx.lineTo(toNode.x, toNode.y);
+                            this.ctx.stroke();
+                        }
+                        this.ctx.globalAlpha = 1;
+                    });
+
+                    // Draw nodes (back to front) - all nodes visible
+                    sortedNodes.forEach((node) => {
+                        const maxRadius =
+                            Math.min(this.width, this.height) * 0.6;
+                        const normalizedZ =
+                            (node.z + maxRadius) / (maxRadius * 2);
+                        const opacity = 0.3 + (1 - normalizedZ) * 0.5; // 0.3 (back) to 0.8 (front)
+                        const size = 2.5 + node.scale * 1.5;
+
+                        this.ctx.fillStyle = `rgba(0, 217, 255, ${opacity})`;
+                        this.ctx.beginPath();
+                        this.ctx.arc(node.x, node.y, size, 0, Math.PI * 2);
+                        this.ctx.fill();
+                    });
+
+                    // Draw vehicles
+                    this.vehicles.forEach((vehicle) => {
+                        if (vehicle.path.length < 2) return;
+
+                        const currentIdx = vehicle.pathIndex;
+                        if (currentIdx >= vehicle.path.length - 1) return;
+
+                        const fromNode = this.nodes[vehicle.path[currentIdx]];
+                        const toNode = this.nodes[vehicle.path[currentIdx + 1]];
+
+                        const x =
+                            fromNode.x +
+                            (toNode.x - fromNode.x) * vehicle.progress;
+                        const y =
+                            fromNode.y +
+                            (toNode.y - fromNode.y) * vehicle.progress;
+                        const z =
+                            fromNode.z +
+                            (toNode.z - fromNode.z) * vehicle.progress;
+
+                        const maxRadius =
+                            Math.min(this.width, this.height) * 0.6;
+                        const normalizedZ = (z + maxRadius) / (maxRadius * 2);
+                        const opacity = 0.4 + (1 - normalizedZ) * 0.6; // 0.4 (back) to 1.0 (front)
+                        const scale = 0.5 + fromNode.scale * 0.5;
+
+                        // Draw vehicle glow
+                        const gradient = this.ctx.createRadialGradient(
+                            x,
+                            y,
+                            0,
+                            x,
+                            y,
+                            25 * scale,
+                        );
+                        const colorMatch = vehicle.color.match(/\w\w/g);
+                        const r = parseInt(colorMatch[0], 16);
+                        const g = parseInt(colorMatch[1], 16);
+                        const b = parseInt(colorMatch[2], 16);
+
+                        gradient.addColorStop(
+                            0,
+                            `rgba(${r}, ${g}, ${b}, ${opacity * 0.8})`,
+                        );
+                        gradient.addColorStop(1, "rgba(0, 0, 0, 0)");
+                        this.ctx.fillStyle = gradient;
+                        this.ctx.beginPath();
+                        this.ctx.arc(x, y, 25 * scale, 0, Math.PI * 2);
+                        this.ctx.fill();
+
+                        // Draw vehicle
+                        this.ctx.fillStyle = vehicle.color;
+                        this.ctx.globalAlpha = opacity;
+                        this.ctx.beginPath();
+                        this.ctx.arc(x, y, 7 * scale, 0, Math.PI * 2);
+                        this.ctx.fill();
+
+                        // Draw vehicle border
+                        this.ctx.strokeStyle = "rgba(10, 14, 23, 0.8)";
+                        this.ctx.lineWidth = 2;
+                        this.ctx.stroke();
+                        this.ctx.globalAlpha = 1;
+                    });
+                }
+
+                animate() {
+                    this.rotation += 0.002; // Slow rotation
+                    this.updateVehicles();
+                    this.draw();
+                    requestAnimationFrame(() => this.animate());
+                }
+            }
+
+            // Initialize the sphere router
+            window.addEventListener("DOMContentLoaded", () => {
+                const canvas = document.getElementById("routingCanvas");
+                new SphereRouter(canvas);
+            });
+        </script>
+    </body>
+</html>
