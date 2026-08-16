@@ -3,10 +3,10 @@
     <head>
         <meta charset="UTF-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-        <title>GPS Coord — Every Coordinate on Earth, One Search Away</title>
+        <title>GPS Coord — a specified coordinate utility. Nothing built yet.</title>
         <meta
             name="description"
-            content="GPS Coord is a precision coordinate utility. Look up coordinates for any location, convert formats, calculate distances, explore elevation data, and access developer APIs."
+            content="GPSCoord is a specification for a coordinate utility — lookup, format conversion, distance, elevation. Nothing is implemented: no API, no location pages, no search. This page states what exists and what does not."
         />
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -228,70 +228,17 @@
                 animation: fadeInUp 0.8s ease 0.2s both;
             }
 
-            /* Coordinate search teaser */
-            .search-teaser {
-                position: relative;
-                width: 100%;
-                max-width: 560px;
-                animation: fadeInUp 0.8s ease 0.35s both;
-            }
-
-            .search-teaser input {
-                width: 100%;
-                background: var(--bg-card);
-                border: 1px solid var(--border);
-                border-radius: 12px;
-                padding: 1.1rem 1.5rem;
-                padding-right: 8rem;
-                font-family: "JetBrains Mono", monospace;
-                font-size: 0.9rem;
-                color: var(--text);
-                outline: none;
-                transition:
-                    border-color 0.3s,
-                    box-shadow 0.3s;
-                backdrop-filter: blur(20px);
-                -webkit-backdrop-filter: blur(20px);
-            }
-
-            .search-teaser input::placeholder {
-                color: var(--text-muted);
-            }
-
-            .search-teaser input:focus {
-                border-color: rgba(0, 212, 255, 0.3);
-                box-shadow:
-                    0 0 0 4px rgba(0, 212, 255, 0.06),
-                    0 8px 32px rgba(0, 0, 0, 0.3);
-            }
-
-            .search-teaser .search-btn {
-                position: absolute;
-                right: 6px;
-                top: 50%;
-                transform: translateY(-50%);
-                background: var(--accent);
-                color: var(--bg);
-                border: none;
-                border-radius: 8px;
-                padding: 0.65rem 1.25rem;
-                font-family: "DM Sans", sans-serif;
-                font-size: 0.8rem;
-                font-weight: 600;
-                cursor: pointer;
-                transition: all 0.2s;
-                letter-spacing: 0.02em;
-            }
-
-            .search-teaser .search-btn:hover {
-                background: #fff;
-                box-shadow: 0 0 20px rgba(0, 212, 255, 0.3);
+            .hero-sub a {
+                color: var(--accent);
+                text-decoration: none;
+                border-bottom: 1px solid rgba(0, 212, 255, 0.35);
             }
 
             .search-hint {
-                margin-top: 0.75rem;
+                max-width: 560px;
                 font-size: 0.75rem;
                 color: var(--text-muted);
+                line-height: 2;
                 animation: fadeInUp 0.8s ease 0.5s both;
             }
 
@@ -373,32 +320,6 @@
                     opacity: 1;
                     transform: scaleY(1.2);
                 }
-            }
-
-            /* Vehicle count */
-            .vehicle-count {
-                position: absolute;
-                bottom: 2.5rem;
-                right: 2.5rem;
-                z-index: 10;
-                text-align: right;
-                animation: fadeIn 1s ease 0.8s both;
-            }
-
-            .vehicle-count .label {
-                font-size: 0.65rem;
-                text-transform: uppercase;
-                letter-spacing: 0.1em;
-                color: var(--text-muted);
-                margin-bottom: 0.35rem;
-            }
-
-            .vehicle-count .number {
-                font-family: "JetBrains Mono", monospace;
-                font-size: 1.5rem;
-                font-weight: 600;
-                color: var(--accent-warm);
-                opacity: 0.7;
             }
 
             /* ============================================
@@ -639,9 +560,25 @@
                 margin: 0 auto;
             }
 
+            /* A label that marks a block as unbacked: proposed, not measured. */
+            .claim-tag {
+                display: inline-block;
+                font-family: "JetBrains Mono", monospace;
+                font-size: 0.68rem;
+                line-height: 1.5;
+                text-transform: uppercase;
+                letter-spacing: 0.06em;
+                color: var(--accent-warm);
+                background: rgba(255, 170, 0, 0.07);
+                border: 1px dashed rgba(255, 170, 0, 0.35);
+                border-radius: 6px;
+                padding: 0.35rem 0.75rem;
+                margin-bottom: 1.25rem;
+            }
+
             .pseo-stats {
                 display: grid;
-                grid-template-columns: repeat(4, 1fr);
+                grid-template-columns: repeat(3, 1fr);
                 gap: 1px;
                 background: var(--border);
                 border: 1px solid var(--border);
@@ -673,12 +610,29 @@
                 letter-spacing: 0.06em;
             }
 
+            /* The witness for the number directly above it. */
+            .pseo-stat .stat-note {
+                margin-top: 0.85rem;
+                font-size: 0.72rem;
+                line-height: 1.65;
+                color: var(--text-muted);
+                text-align: left;
+            }
+
+            .pseo-stat .stat-note code {
+                font-family: "JetBrains Mono", monospace;
+                font-size: 0.68rem;
+                background: rgba(255, 255, 255, 0.05);
+                padding: 0.1rem 0.3rem;
+                border-radius: 3px;
+                word-break: break-all;
+            }
+
             /* URL preview examples */
             .url-examples {
                 display: flex;
                 flex-wrap: wrap;
                 gap: 0.5rem;
-                margin-top: 2.5rem;
             }
 
             .url-pill {
@@ -719,6 +673,10 @@
                 left: 50%;
                 transform: translateX(-50%);
                 width: 400px;
+                /* Without this the fixed 400px glow is wider than a 375px
+                   layout viewport and scrolls the whole document sideways
+                   by 13px at 390. Pre-existing; measured 2026-08-16. */
+                max-width: 100%;
                 height: 400px;
                 background: radial-gradient(
                     circle,
@@ -745,54 +703,54 @@
                 line-height: 1.6;
             }
 
-            /* Email form */
-            .email-form {
-                display: flex;
-                max-width: 440px;
-                margin: 0 auto 1rem;
-                gap: 0;
-                border-radius: 10px;
-                overflow: hidden;
-                border: 1px solid var(--border);
-                transition: border-color 0.3s;
+            /* Calls to action the spec rung can actually honour */
+            .cta-actions {
+                display: grid;
+                grid-template-columns: repeat(3, 1fr);
+                gap: 1rem;
+                max-width: 820px;
+                margin: 0 auto 1.5rem;
+                text-align: left;
             }
 
-            .email-form:focus-within {
-                border-color: rgba(0, 212, 255, 0.3);
-                box-shadow: 0 0 0 4px rgba(0, 212, 255, 0.05);
-            }
-
-            .email-form input {
-                flex: 1;
+            .cta-action {
+                display: block;
                 background: var(--bg-card);
-                border: none;
-                padding: 0.9rem 1.25rem;
-                font-family: "DM Sans", sans-serif;
-                font-size: 0.875rem;
-                color: var(--text);
-                outline: none;
+                border: 1px solid var(--border);
+                border-radius: 10px;
+                padding: 1.1rem 1.25rem;
+                text-decoration: none;
+                transition:
+                    border-color 0.2s,
+                    background 0.2s;
             }
 
-            .email-form input::placeholder {
-                color: var(--text-muted);
+            .cta-action:hover {
+                border-color: rgba(0, 212, 255, 0.3);
+                background: rgba(0, 212, 255, 0.05);
             }
 
-            .email-form button {
-                background: var(--accent);
-                color: var(--bg);
-                border: none;
-                padding: 0.9rem 1.75rem;
-                font-family: "DM Sans", sans-serif;
-                font-size: 0.8rem;
+            .cta-action-verb {
+                display: block;
+                font-size: 0.7rem;
                 font-weight: 600;
-                cursor: pointer;
-                transition: background 0.2s;
-                white-space: nowrap;
-                letter-spacing: 0.02em;
+                text-transform: uppercase;
+                letter-spacing: 0.09em;
+                color: var(--accent);
+                margin-bottom: 0.4rem;
             }
 
-            .email-form button:hover {
-                background: #fff;
+            .cta-action-what {
+                display: block;
+                font-size: 0.8rem;
+                line-height: 1.55;
+                color: var(--text-dim);
+            }
+
+            @media (max-width: 780px) {
+                .cta-actions {
+                    grid-template-columns: 1fr;
+                }
             }
 
             .cta-note {
@@ -927,8 +885,7 @@
                     padding-right: 1.5rem;
                 }
 
-                .live-coords,
-                .vehicle-count {
+                .live-coords {
                     display: none;
                 }
 
@@ -956,43 +913,33 @@
                 <nav class="nav">
                     <div class="logo">gps<span>coord</span></div>
                     <div class="nav-links">
-                        <a href="#features">Features</a>
-                        <a href="#api">API</a>
-                        <a href="#notify" class="notify-btn"
-                            >Get Early Access</a
-                        >
+                        <a href="#features">Scope</a>
+                        <a href="#api">API shape</a>
+                        <a href="#source" class="notify-btn">Source</a>
                     </div>
                 </nav>
 
                 <div class="hero-center">
                     <div class="hero-badge">
                         <span class="dot"></span>
-                        Launching 2026
+                        spec &middot; nothing built yet
                     </div>
                     <h1 class="hero-title">
                         Every coordinate on Earth,<br />
                         <span class="highlight">one search away.</span>
                     </h1>
                     <p class="hero-sub">
-                        Precision coordinate utilities, real-time conversion
-                        tools, and developer APIs — built for surveyors,
-                        engineers, drone operators, and anyone who works with
-                        location data.
+                        That is the intent, not the status. Today GPSCoord is a
+                        domain, this page, and a scope written below. There is
+                        no search, no API, and no location pages — see
+                        <a href="#coverage">what exists today</a>. The source is
+                        public.
                     </p>
-                    <div class="search-teaser">
-                        <input
-                            type="text"
-                            placeholder="Search any place, address, or coordinates..."
-                            id="searchInput"
-                        />
-                        <button class="search-btn" onclick="handleSearch()">
-                            Look up
-                        </button>
-                    </div>
                     <p class="search-hint">
-                        Try <code>29.5688° N, 97.9644° W</code> or
-                        <code>Seguin, TX</code> or
-                        <code>UTM 14R 597842 3270738</code>
+                        Formats in scope:
+                        <code>DD</code> <code>DMS</code> <code>UTM</code>
+                        <code>MGRS</code> <code>Plus Code</code>
+                        <code>What3Words</code> — none implemented.
                     </p>
                 </div>
 
@@ -1010,26 +957,22 @@
                     <span>Explore</span>
                     <div class="scroll-line"></div>
                 </div>
-
-                <div class="vehicle-count">
-                    <div class="label">Active Pathfinders</div>
-                    <div class="number">12</div>
-                </div>
             </div>
         </section>
 
         <!-- ========== FEATURES ========== -->
         <section class="section" id="features">
             <div class="reveal">
-                <div class="section-label">What we're building</div>
+                <div class="section-label">Scope — specified, not built</div>
                 <h2 class="section-title">
                     The coordinate utility the internet deserves.
                 </h2>
                 <p class="section-desc">
-                    GPSCoord combines the precision of professional GIS tools
-                    with the speed and simplicity of a modern web app. Every
-                    location on the planet, every format, every conversion —
-                    instantly.
+                    Everything in this section is a description of intended
+                    behaviour. <strong>None of it is implemented.</strong> It is
+                    published so it can be read, argued with, or built — by us
+                    or by anyone else. Where a card says "get", read "would
+                    get".
                 </p>
             </div>
 
@@ -1131,11 +1074,18 @@
                     <div class="section-label">For Developers</div>
                     <h2>A coordinate API that doesn't cost a fortune.</h2>
                     <p>
-                        Google Maps charges $5–$7 per 1,000 geocoding calls.
-                        We're building an alternative at a fraction of the cost,
-                        powered by open data (GeoNames, OpenStreetMap, SRTM)
-                        with enterprise-grade reliability.
+                        The intent is an API built on open data — GeoNames,
+                        OpenStreetMap, SRTM — priced below the commercial
+                        geocoding services. <strong>No endpoint exists.</strong>
+                        <code>/api/v1/geocode</code> on this domain returns this
+                        HTML page, not JSON (checked 2026-08-16). We have not
+                        measured latency, uptime, or throughput, so this page
+                        claims none.
                     </p>
+                    <div class="claim-tag">
+                        Proposed pricing &mdash; not set, not approved, nothing
+                        is for sale
+                    </div>
                     <div class="api-tiers">
                         <div class="api-tier">
                             <div class="tier-name">Free</div>
@@ -1159,11 +1109,14 @@
                         <div class="dots">
                             <span></span><span></span><span></span>
                         </div>
-                        <div class="filename">api-example.sh</div>
+                        <div class="filename">
+                            api-example.sh &mdash; specified, not implemented
+                        </div>
                     </div>
                     <div class="code-body">
                         <span class="comment"
-                            ># Look up coordinates for any place</span
+                            ># The response SHAPE we intend. This endpoint does
+                            not exist.</span
                         >
                         <span class="key">GET</span>
                         <span class="string">/api/v1/geocode</span
@@ -1213,35 +1166,57 @@
         <section class="pseo-section" id="coverage">
             <div class="pseo-inner">
                 <div class="reveal">
-                    <div class="section-label">Global Coverage</div>
+                    <div class="section-label">What exists today</div>
                     <h2 class="section-title">
                         A page for every place on Earth.
                     </h2>
                     <p class="section-desc">
-                        We're building coordinate pages for every city,
-                        landmark, airport, zip code, and point of interest
-                        worldwide — powered by GeoNames, OpenStreetMap, and SRTM
-                        elevation data.
+                        That is the ambition. It is worth stating plainly what
+                        has been built toward it so far, and how that was
+                        checked. Every number below is either a count of
+                        something that exists or a zero.
                     </p>
                 </div>
 
                 <div class="pseo-stats reveal">
                     <div class="pseo-stat">
-                        <div class="stat-number">200K+</div>
-                        <div class="stat-label">Location Pages</div>
+                        <div class="stat-number">0</div>
+                        <div class="stat-label">Location pages published</div>
+                        <div class="stat-note">
+                            Checked 2026-08-16: <code>/tokyo</code>,
+                            <code>/us/texas/seguin</code>,
+                            <code>/airport/KJFK</code>,
+                            <code>/zip/78155</code> and a nonsense path all
+                            return HTTP 200 and the same 61,074-byte homepage.
+                            The domain has a catch-all, not an index.
+                        </div>
                     </div>
                     <div class="pseo-stat">
-                        <div class="stat-number">195</div>
-                        <div class="stat-label">Countries</div>
+                        <div class="stat-number">0</div>
+                        <div class="stat-label">API endpoints</div>
+                        <div class="stat-note">
+                            Checked 2026-08-16:
+                            <code>/api/v1/geocode?place=Seguin,&nbsp;TX</code>
+                            responds <code>content-type: text/html</code>. No
+                            latency figure is published because none has been
+                            measured.
+                        </div>
                     </div>
                     <div class="pseo-stat">
                         <div class="stat-number">6</div>
-                        <div class="stat-label">Coord Formats</div>
+                        <div class="stat-label">Formats in scope</div>
+                        <div class="stat-note">
+                            DD, DMS, UTM, MGRS, Plus Code, What3Words — counted
+                            from the scope section above. This is a count of the
+                            specification, not of working converters. There are
+                            no working converters.
+                        </div>
                     </div>
-                    <div class="pseo-stat">
-                        <div class="stat-number">&lt;50ms</div>
-                        <div class="stat-label">API Response</div>
-                    </div>
+                </div>
+
+                <div class="claim-tag reveal" style="margin-top: 2.5rem">
+                    Proposed URL shapes &mdash; none of these resolve to a page
+                    today
                 </div>
 
                 <div class="url-examples reveal">
@@ -1279,18 +1254,52 @@
         </section>
 
         <!-- ========== CTA ========== -->
-        <section class="cta-section" id="notify">
-            <h2 class="cta-title reveal">Be the first to know.</h2>
+        <section class="cta-section" id="source">
+            <h2 class="cta-title reveal">Read it, argue with it, build it.</h2>
             <p class="cta-sub reveal">
-                We're building in public. Get notified when GPSCoord launches —
-                with early access to the API and Pro tools.
+                There is nothing here to run, so this page does not ask you to
+                run anything. What it can honestly offer is the scope above and
+                the source that produced it.
             </p>
-            <div class="email-form reveal">
-                <input type="email" placeholder="you@company.com" />
-                <button>Notify Me</button>
+            <div class="cta-actions reveal">
+                <a
+                    class="cta-action"
+                    href="https://github.com/c-u-l8er/GPSCoord"
+                    target="_blank"
+                    rel="noopener"
+                >
+                    <span class="cta-action-verb">Read</span>
+                    <span class="cta-action-what"
+                        >the source of this page and everything behind it</span
+                    >
+                </a>
+                <a
+                    class="cta-action"
+                    href="https://github.com/c-u-l8er/GPSCoord/issues"
+                    target="_blank"
+                    rel="noopener"
+                >
+                    <span class="cta-action-verb">Challenge</span>
+                    <span class="cta-action-what"
+                        >a claim on this page — open an issue and name it</span
+                    >
+                </a>
+                <a
+                    class="cta-action"
+                    href="https://github.com/c-u-l8er/GPSCoord/fork"
+                    target="_blank"
+                    rel="noopener"
+                >
+                    <span class="cta-action-verb">Implement</span>
+                    <span class="cta-action-what"
+                        >any part of the scope — it is specified, not
+                        reserved</span
+                    >
+                </a>
             </div>
             <p class="cta-note reveal">
-                No spam. Just launch updates and API docs.
+                No mailing list, no early-access list, no waitlist. There would
+                be nothing to send you.
             </p>
         </section>
 
@@ -1307,8 +1316,12 @@
                 <a href="https://ampersandboxdesign.com" target="_blank"
                     >Ampersand Box</a
                 >
-                <a href="#">GitHub</a>
-                <a href="#">Twitter</a>
+                <a
+                    href="https://github.com/c-u-l8er/GPSCoord"
+                    target="_blank"
+                    rel="noopener"
+                    >GitHub</a
+                >
             </div>
         </footer>
 
@@ -1333,26 +1346,20 @@
                 );
             }
 
-            // Search teaser interaction
-            function handleSearch() {
-                const val = document.getElementById("searchInput").value;
-                if (val.trim()) {
-                    alert(
-                        "GPSCoord is launching soon! Sign up below to get early access.",
-                    );
-                    document
-                        .getElementById("notify")
-                        .scrollIntoView({ behavior: "smooth" });
-                }
+            // Scroll reveal.
+            // IntersectionObserver never fires in headless/non-compositing
+            // renderers, which makes every .reveal section invisible to a
+            // crawler-like reader and to automated verification. The timeout
+            // is the fallback; `revealed` guards against doing it twice.
+            let revealed = false;
+            function revealAll() {
+                if (revealed) return;
+                revealed = true;
+                document
+                    .querySelectorAll(".reveal")
+                    .forEach((el) => el.classList.add("visible"));
             }
 
-            document
-                .getElementById("searchInput")
-                .addEventListener("keydown", (e) => {
-                    if (e.key === "Enter") handleSearch();
-                });
-
-            // Scroll reveal
             const observer = new IntersectionObserver(
                 (entries) => {
                     entries.forEach((entry) => {
@@ -1366,6 +1373,7 @@
             document
                 .querySelectorAll(".reveal")
                 .forEach((el) => observer.observe(el));
+            setTimeout(revealAll, 1500);
 
             // ============================================
             // GLOBE ANIMATION (preserved & enhanced)
