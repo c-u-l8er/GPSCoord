@@ -1,0 +1,49 @@
+{
+  "schema": "gpscoord-reference-pairs-v1",
+  "_comment": "Frozen distance and bearing expectations, confirmed against GeographicLib 2.x on 2026-08-16. Distances in metres, bearings in degrees from true north.",
+  "confirmed_at": "2026-08-16",
+  "pairs": [
+    {
+      "name": "Greenwich → Sydney Opera House",
+      "from": [
+        51.4779,
+        -0.0015
+      ],
+      "to": [
+        -33.8568,
+        151.2153
+      ],
+      "distanceM": 16982636.773,
+      "initialBearing": 60.560309,
+      "finalBearing": 139.170613
+    },
+    {
+      "name": "Seguin → Kathmandu",
+      "from": [
+        29.5688,
+        -97.9644
+      ],
+      "to": [
+        27.7172,
+        85.324
+      ],
+      "distanceM": 13654938.264,
+      "initialBearing": 356.557095,
+      "finalBearing": 183.382899
+    },
+    {
+      "name": "Bergen → Longyearbyen",
+      "from": [
+        60.39,
+        5.32
+      ],
+      "to": [
+        78.22,
+        15.63
+      ],
+      "distanceM": 2022646.319,
+      "initialBearing": 6.750171,
+      "finalBearing": 16.515632
+    }
+  ]
+}

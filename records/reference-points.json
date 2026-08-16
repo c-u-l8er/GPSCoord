@@ -1,0 +1,103 @@
+{
+  "schema": "gpscoord-reference-points-v1",
+  "_comment": "Frozen expectations. src/coord.mjs must reproduce every field exactly; check.mjs asserts it and build-site.mjs refuses to emit a page whose table disagrees. Each row was independently confirmed by PROJ 9.5.1 and NGA GEOTRANS on 2026-08-16 — see records/verification.json.",
+  "confirmed_at": "2026-08-16",
+  "points": [
+    {
+      "name": "Null Island — the equator on zone 31’s central meridian",
+      "lat": 0,
+      "lon": 3,
+      "zone": 31,
+      "band": "N",
+      "easting": 500000,
+      "northing": 0,
+      "mgrs": "31NEA0000000000",
+      "dms": "0°00'00.00\"N 3°00'00.00\"E",
+      "ddm": "0°00.0000'N 3°00.0000'E"
+    },
+    {
+      "name": "Greenwich Royal Observatory",
+      "lat": 51.4779,
+      "lon": -0.0015,
+      "zone": 30,
+      "band": "U",
+      "easting": 708213.495,
+      "northing": 5707235.66,
+      "mgrs": "30UYC0821307235",
+      "dms": "51°28'40.44\"N 0°00'05.40\"W",
+      "ddm": "51°28.6740'N 0°00.0900'W"
+    },
+    {
+      "name": "Seguin, Texas",
+      "lat": 29.5688,
+      "lon": -97.9644,
+      "zone": 14,
+      "band": "R",
+      "easting": 600313.021,
+      "northing": 3271453.85,
+      "mgrs": "14RPT0031371453",
+      "dms": "29°34'07.68\"N 97°57'51.84\"W",
+      "ddm": "29°34.1280'N 97°57.8640'W"
+    },
+    {
+      "name": "Sydney Opera House",
+      "lat": -33.8568,
+      "lon": 151.2153,
+      "zone": 56,
+      "band": "H",
+      "easting": 334900.57,
+      "northing": 6252288.753,
+      "mgrs": "56HLH3490052288",
+      "dms": "33°51'24.48\"S 151°12'55.08\"E",
+      "ddm": "33°51.4080'S 151°12.9180'E"
+    },
+    {
+      "name": "Bergen, Norway — where zone 32 is widened",
+      "lat": 60.39,
+      "lon": 5.32,
+      "zone": 32,
+      "band": "V",
+      "easting": 297230.22,
+      "northing": 6700510.175,
+      "mgrs": "32VKN9723000510",
+      "dms": "60°23'24.00\"N 5°19'12.00\"E",
+      "ddm": "60°23.4000'N 5°19.2000'E"
+    },
+    {
+      "name": "Longyearbyen, Svalbard — where zone 32 does not exist",
+      "lat": 78.22,
+      "lon": 15.63,
+      "zone": 33,
+      "band": "X",
+      "easting": 514357.744,
+      "northing": 8682999.169,
+      "mgrs": "33XWG1435782999",
+      "dms": "78°13'12.00\"N 15°37'48.00\"E",
+      "ddm": "78°13.2000'N 15°37.8000'E"
+    },
+    {
+      "name": "Ushuaia, Argentina",
+      "lat": -54.8019,
+      "lon": -68.303,
+      "zone": 19,
+      "band": "F",
+      "easting": 544805.097,
+      "northing": 3927029.885,
+      "mgrs": "19FEV4480527029",
+      "dms": "54°48'06.84\"S 68°18'10.80\"W",
+      "ddm": "54°48.1140'S 68°18.1800'W"
+    },
+    {
+      "name": "Kathmandu, Nepal",
+      "lat": 27.7172,
+      "lon": 85.324,
+      "zone": 45,
+      "band": "R",
+      "easting": 334769.781,
+      "northing": 3067000.013,
+      "mgrs": "45RUL3476967000",
+      "dms": "27°43'01.92\"N 85°19'26.40\"E",
+      "ddm": "27°43.0320'N 85°19.4400'E"
+    }
+  ]
+}

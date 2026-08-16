@@ -1,0 +1,122 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Coordinate converter — DD, DMS, DDM, UTM, MGRS — GPSCoord</title>
+<meta name="description" content="Convert a coordinate between decimal degrees, degrees-minutes-seconds, degrees-decimal-minutes, UTM and MGRS, and measure geodesic distance and bearing. Runs entirely in your browser. Checked against PROJ, GEOTRANS and GeographicLib.">
+<meta name="falsifiable-question" content="{{QUESTION}}">
+<link rel="canonical" href="{{ORIGIN}}{{APP_PATH}}">
+<meta name="theme-color" content="#07090e">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,300..700&family=Instrument+Serif:ital@0;1&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>{{CSS}}
+/* --- app-only --- */
+.tool{background:var(--ink2);border:1px solid var(--line);border-radius:var(--rl);overflow:hidden;margin-top:26px}
+.tool>.hd{display:flex;flex-wrap:wrap;gap:12px;align-items:center;justify-content:space-between;padding:14px 20px;border-bottom:1px solid var(--line);background:var(--ink3)}
+.tool>.hd .t{font-family:var(--mono);font-size:var(--xs);text-transform:uppercase;letter-spacing:.12em;color:var(--fg2)}
+.tool>.bd{padding:20px}
+label{display:block;font-family:var(--mono);font-size:var(--xs);text-transform:uppercase;letter-spacing:.1em;color:var(--fg3);margin-bottom:7px}
+input[type=text]{width:100%;background:var(--ink);border:1px solid var(--line2);border-radius:var(--r);padding:14px;font-family:var(--mono);font-size:var(--md);color:var(--fg);outline:none}
+input[type=text]::placeholder{color:var(--fg3)}
+input[type=text]:focus{border-color:var(--acc-line);box-shadow:0 0 0 4px var(--acc-soft)}
+input.bad{border-color:rgba(245,196,81,.5)}
+.readout{display:flex;flex-wrap:wrap;align-items:center;gap:7px 11px;margin-top:12px;font-size:var(--sm);color:var(--fg2);min-height:1.7em;overflow-wrap:anywhere}
+.pill{font-family:var(--mono);font-size:var(--xs);text-transform:uppercase;letter-spacing:.08em;padding:2px 8px;border-radius:6px;border:1px solid var(--data-soft);background:var(--data-soft);color:var(--data);white-space:nowrap}
+.pill.warn{color:var(--warn);border-color:rgba(245,196,81,.3);background:rgba(245,196,81,.08)}
+.egs{display:flex;flex-wrap:wrap;gap:8px;margin-top:16px}
+.egs button{font-family:var(--mono);font-size:var(--xs);background:transparent;border:1px solid var(--line2);color:var(--fg2);padding:5px 11px;border-radius:999px;cursor:pointer}
+.egs button:hover{border-color:var(--acc-line);color:var(--acc);background:var(--acc-soft)}
+.outs{margin-top:24px;border:1px solid var(--line);border-radius:var(--r);overflow:hidden}
+.out{display:grid;grid-template-columns:150px 1fr auto;gap:16px;align-items:center;padding:14px 16px;border-top:1px solid var(--line);background:var(--ink);min-width:0}
+.out:first-child{border-top:0}
+.out .n b{display:block;font-size:var(--sm);font-weight:600}
+.out .n span{display:block;font-size:var(--xs);color:var(--fg3);line-height:1.4}
+.out .v{font-family:var(--mono);font-size:.9375rem;color:var(--data);overflow-wrap:anywhere;min-width:0}
+.out.na .v{color:var(--fg3)}
+.cp{font-family:var(--mono);font-size:var(--xs);text-transform:uppercase;letter-spacing:.08em;background:transparent;border:1px solid var(--line2);color:var(--fg3);padding:5px 9px;border-radius:6px;cursor:pointer;white-space:nowrap}
+.cp:hover{border-color:var(--acc-line);color:var(--acc)}
+.cp.done{color:var(--data);border-color:rgba(90,209,200,.4)}
+.facts{display:grid;grid-template-columns:repeat(auto-fit,minmax(185px,1fr));gap:1px;background:var(--ink);border:1px solid var(--line);border-radius:var(--r);overflow:hidden;margin-top:20px}
+.facts>div{background:var(--ink);padding:14px;min-width:0;box-shadow:0 0 0 1px var(--line)}
+.facts .k{font-family:var(--mono);font-size:var(--xs);text-transform:uppercase;letter-spacing:.09em;color:var(--fg3)}
+.facts .v{font-family:var(--mono);font-size:var(--md);color:var(--fg);overflow-wrap:anywhere;margin-top:2px}
+.facts .n{font-size:var(--xs);color:var(--fg3);line-height:1.45;margin-top:3px}
+figure{margin:20px 0 0;border:1px solid var(--line);border-radius:var(--r);background:var(--ink);padding:16px;overflow-x:auto}
+figure svg{display:block;width:100%;min-width:520px;height:auto}
+figcaption{font-size:var(--xs);color:var(--fg3);margin-top:12px;line-height:1.5}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+@media(max-width:700px){.two{grid-template-columns:1fr}}
+@media(max-width:640px){.out{grid-template-columns:1fr;gap:6px}.out .cp{justify-self:start}}
+</style></head><body>
+{{BAND}}
+<div class="wrap">
+
+<div class="top"><a class="logo" href="/">gps<span>coord</span></a>
+<nav><a href="/">The question</a><a href="/#line">The line</a><a href="/#verify">Evidence</a><a href="{{CONTACT}}">Challenge a claim</a></nav></div>
+
+<section>
+<div class="eyebrow">The part that works</div>
+<h2>One position, written every way it can be written.</h2>
+<p class="lede">Type a coordinate in any notation — decimal degrees, degrees-minutes-seconds, degrees-decimal-minutes, UTM or MGRS. It is parsed and re-emitted in all of them, live, in your browser. Nothing is sent anywhere; there is no server to send it to.</p>
+
+<div class="tool">
+<div class="hd"><span class="t">Coordinate converter</span>{{RUNG_CONVERTER}}</div>
+<div class="bd">
+<label for="in">Coordinate — any notation</label>
+<input type="text" id="in" spellcheck="false" autocomplete="off" value="29.5688, -97.9644" placeholder="29.5688, -97.9644">
+<div class="readout" id="readout"></div>
+<div class="egs">{{EXAMPLES}}</div>
+<div class="outs" id="outs"></div>
+<div class="facts" id="facts"></div>
+<figure><svg id="zones" viewBox="0 0 900 250" role="img" aria-labelledby="zcap"></svg>
+<figcaption id="zcap">The UTM grid, to scale: 60 zones of 6° longitude across, 20 latitude bands of 8° up (band X is 12°). The lit cell is the one your coordinate falls in; the inset is its MGRS 100&nbsp;km square. That is the whole of what the zone and band letters mean.</figcaption></figure>
+</div></div>
+</section>
+
+<section>
+<div class="eyebrow">Also arithmetic</div>
+<h2>How far apart, and which way.</h2>
+<p class="lede">Distance and bearing on the WGS84 ellipsoid by Vincenty's inverse method. The sphere-based answer sits next to it, because the gap between the two is the honest measure of how much the Earth's shape matters for your particular pair.</p>
+
+<div class="tool">
+<div class="hd"><span class="t">Distance &amp; bearing</span>{{RUNG_DISTANCE}}</div>
+<div class="bd">
+<div class="two">
+<div><label for="pa">From</label><input type="text" id="pa" spellcheck="false" autocomplete="off" value="51.4779, -0.0015"></div>
+<div><label for="pb">To</label><input type="text" id="pb" spellcheck="false" autocomplete="off" value="-33.8568, 151.2153"></div>
+</div>
+<div class="readout" id="preadout"></div>
+<div class="facts" id="pfacts"></div>
+</div></div>
+</section>
+
+<section>
+<div class="eyebrow">What it will not convert, and why</div>
+<h2>Two formats are missing on purpose.</h2>
+<p class="lede">The previous version of this site counted six formats "in scope" and implied all six were coming. Five are real and above. Here is the honest account of the other two.</p>
+{{UNAVAILABLE}}
+</section>
+
+<section>
+<div class="eyebrow">The receipt</div>
+<h2>Checked against three implementations we did not write.</h2>
+{{METHOD}}
+{{REF_TABLE}}
+<p class="lede sm">These eight rows were recomputed by the build from the same code this page runs, and the build refuses to publish if any of them disagrees with the frozen record. The distance pairs below are held to the same rule.</p>
+{{PAIR_TABLE}}
+{{STATUS}}
+</section>
+
+<section>
+<div class="eyebrow">What you can do here</div>
+<h2>It is running. Try to break it.</h2>
+{{CTA}}
+</section>
+
+</div>
+<footer><div class="in">
+<div>&copy; {{YEAR}} GPSCoord.com&ensp;·&ensp;<a href="/">{{QUESTION}}</a></div>
+<div class="links"><a href="/">The question</a><a href="{{REPO}}">Source</a><a href="{{CONTACT}}">Challenge a claim</a><a href="https://ampersandboxdesign.com">[&amp;]</a></div>
+</div>
+<p class="attrib"><span class="stamp">{{STAMP}}</span> — WGS84 (EPSG:4326). Krüger series to sixth order for the projections; Vincenty's inverse method for the geodesics. No map data and no third-party service is used on this page.</p>
+</footer>
+<script id="coord-math">{{MATH}}</script>
+<script>{{APP}}</script>
+</body></html>

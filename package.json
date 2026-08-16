@@ -1,0 +1,12 @@
+{
+  "name": "gpscoord-site",
+  "version": "0.2.0",
+  "private": true,
+  "type": "module",
+  "description": "gpscoord.com — generated from frozen records, with a build that refuses to publish drift. Zero runtime dependencies.",
+  "scripts": {
+    "build": "node build-site.mjs",
+    "check": "node check.mjs",
+    "test:launch": "node build-site.mjs && node check.mjs && node launch-gate.mjs"
+  }
+}

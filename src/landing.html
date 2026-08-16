@@ -1,0 +1,80 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>What can we actually know from a coordinate? — GPSCoord</title>
+<meta name="description" content="A coordinate is a position, and position converts exactly into every grid system ever standardised. Everything else people want from a coordinate needs a dataset. This page draws that line, and the converter that works is one click away.">
+<meta name="falsifiable-question" content="{{QUESTION}}">
+<link rel="canonical" href="{{ORIGIN}}/">
+<meta name="theme-color" content="#07090e">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,300..700&family=Instrument+Serif:ital@0;1&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>{{CSS}}</style></head><body>
+{{BAND}}
+<div class="wrap">
+
+<div class="top"><a class="logo" href="/">gps<span>coord</span></a>
+<nav><a href="#answer">The answer</a><a href="#line">The line</a><a href="#verify">Evidence</a><a class="btn" href="{{APP_PATH}}">Open the converter</a></nav></div>
+
+<section>
+<div class="eyebrow">The question this site exists to answer</div>
+<h1>What can we actually know from a <em>coordinate?</em></h1>
+<p class="lede">Less than the industry implies, and the honest amount is worth having. A latitude and longitude is a <strong>position</strong> — and position rewrites exactly into every grid system ever standardised. That part is arithmetic, it is settled, and <strong>it works here.</strong> Everything else people want from a coordinate — the county, the elevation, the timezone, the address — is not in the coordinate at all. It is in a dataset, and we do not have one.</p>
+<p><a class="btn" href="{{APP_PATH}}">Open the converter</a>&nbsp;&nbsp;<a class="btn ghost" href="#verify">How it was checked</a></p>
+</section>
+
+{{PLATE}}
+
+<section id="answer">
+<div class="eyebrow">The answer, in two halves</div>
+<h2>One half is arithmetic. The other half is somebody else's database.</h2>
+<p class="lede">The split is not a limitation of this site. It is the actual structure of the problem, and most coordinate sites blur it because the blurred version sells better.</p>
+<div class="grid">
+<div><h3 class="yes">Knowable from the number alone</h3><p>Every equivalent notation, the UTM zone and latitude band, the MGRS 100&nbsp;km square, the grid convergence and point scale, and the geodesic distance and bearing to any other coordinate. No lookup, no network, no licence.</p></div>
+<div><h3 class="no">Not knowable — needs a dataset</h3><p>Which country or county it falls in, its elevation, its timezone, the nearest street or town, what is built there. None of that is a property of the number. Each is a separate lookup against data somebody had to collect, licence and keep current.</p></div>
+<div><h3>What this site will not do</h3><p>Guess. Where a fact needs data we do not hold, the page says so and stops, rather than showing a plausible value. That rule is enforced by the build, not by good intentions.</p></div>
+</div>
+</section>
+
+<section id="line">
+<div class="eyebrow">The boundary, stated rather than blurred</div>
+<h2>What a coordinate does not tell you.</h2>
+<p class="lede">Every item below is a thing people reasonably expect a coordinate site to answer, and not one is derivable from the number. Each needs a dataset with a licence, a size and a refresh cadence attached. None of it is built here, and the rung on each card says so.</p>
+{{LINE_CARDS}}
+</section>
+
+<section id="verify">
+<div class="eyebrow">How this was checked</div>
+<h2>A converter that lies is worse than a page with no converter.</h2>
+<p class="lede">UTM and MGRS are fiddly enough that a wrong implementation looks right — it round-trips perfectly and lands within a few kilometres of the truth. Round-tripping proves nothing on its own, so this one was checked against three implementations written by other people.</p>
+{{METHOD}}
+
+<h3 class="mt">The eight published reference points</h3>
+<p class="lede sm">Chosen to cover both hemispheres, the equator, a central meridian, and both documented zone irregularities — southwest Norway, where zone 32 is widened, and Svalbard, where zones 32, 34 and 36 do not exist. Every row below was recomputed by the build from the same code the converter runs, and refused to publish unless it matched the frozen record.</p>
+{{REF_TABLE}}
+
+<h3 class="mt">Status of this surface</h3>
+{{STATUS}}
+
+<h3 class="mt">Still zero, and still worth printing</h3>
+{{ZEROS}}
+
+{{RETRACTION}}
+</section>
+
+<section id="do">
+<div class="eyebrow">What you can do here</div>
+<h2>Two rungs, two different invitations.</h2>
+<p class="lede">A page may only ask you to do what its evidence has earned. The converter has been run and checked, so it asks you to use it and to re-run the check. The rest has not been built, so it cannot ask you to run anything at all.</p>
+{{CTA}}
+</section>
+
+<section>
+{{PRICING}}
+</section>
+
+</div>
+<footer><div class="in">
+<div>&copy; {{YEAR}} GPSCoord.com&ensp;·&ensp;<a href="/">{{QUESTION}}</a></div>
+<div class="links"><a href="{{APP_PATH}}">Converter</a><a href="{{REPO}}">Source</a><a href="{{CONTACT}}">Challenge a claim</a><a href="https://ampersandboxdesign.com">[&amp;]</a></div>
+</div>
+<p class="attrib"><span class="stamp">{{STAMP}}</span> — Coordinates are WGS84 (EPSG:4326). Projections use the Krüger series to sixth order; distances use Vincenty's inverse method on the WGS84 ellipsoid. No map data, no geocoding and no third-party service is used anywhere on this site, so there is nothing here to attribute — which is itself the honest measure of how little a coordinate alone can tell you.</p>
+</footer>
+</body></html>

@@ -1,0 +1,46 @@
+{
+  "schema": "gpscoord-verification-v1",
+  "_comment": "A one-time external cross-check, dated and recorded rather than re-run. The witnesses (PROJ, GEOTRANS, GeographicLib) are Python packages that are NOT dependencies of this repository — running them again needs a virtualenv, so their results are frozen here. What survives and is re-asserted on every build is records/reference-points.json and records/reference-pairs.json, which are the residue of this comparison. check.mjs re-proves those on every build with no dependencies at all.",
+
+  "checked_at": "2026-08-16",
+  "sample": "4,000 pseudo-random points from a fixed seed spanning 80°S–84°N and all 60 UTM zones; 1,500 random point pairs for distance and bearing.",
+
+  "measurements": [
+    {
+      "id": "utm_vs_proj",
+      "label": "UTM vs PROJ 9.5.1",
+      "value": "max 7 × 10⁻⁹ m",
+      "note": "Worst disagreement in forward easting or northing of any single one of the 4,000 points, in metres. The inverse transform agrees to the same order."
+    },
+    {
+      "id": "mgrs_vs_geotrans",
+      "label": "MGRS vs NGA GEOTRANS",
+      "value": "0 mismatches / 4,000",
+      "note": "Every 5-digit MGRS string produced here is character-for-character identical to the one GEOTRANS produces for the same point."
+    },
+    {
+      "id": "distance_vs_geographiclib",
+      "label": "Distance vs GeographicLib",
+      "value": "max 7.5 × 10⁻⁵ m",
+      "note": "Over 1,500 random pairs. Initial and final bearings agree to within 1 × 10⁻⁵ arcseconds."
+    },
+    {
+      "id": "reproduce",
+      "label": "Reproduce it",
+      "value": "node check.mjs",
+      "note": "No dependencies and no network. It reads src/coord.mjs and asserts it against the frozen records below, so the arithmetic and the published tables cannot drift apart."
+    }
+  ],
+
+  "witnesses": [
+    { "name": "PROJ", "version": "9.5.1", "via": "pyproj 3.7.2", "covers": "UTM forward and inverse" },
+    { "name": "NGA GEOTRANS", "version": "as bundled by the Python `mgrs` package", "via": "mgrs", "covers": "MGRS forward and inverse" },
+    { "name": "GeographicLib", "version": "2.x", "via": "geographiclib (pure Python, Karney)", "covers": "Geodesic distance and bearings" }
+  ],
+
+  "known_limits": [
+    "Vincenty's method does not converge for very nearly antipodal pairs. The converter refuses those rather than printing a wrong distance; GeographicLib would solve them and is not shipped here.",
+    "The cross-check covers 80°S–84°N. UTM and MGRS are undefined outside that band and the converter says so instead of extrapolating.",
+    "The comparison was run once, on one machine, in Node 25. It has not been run in a browser engine."
+  ]
+}

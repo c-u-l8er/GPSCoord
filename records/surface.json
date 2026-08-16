@@ -1,0 +1,149 @@
+{
+  "schema": "computedriven-surface-v1",
+  "_comment": "The frozen record this site is generated from. Nothing in a generated page may state a rung, a status or a count that is not here. build-site.mjs reads it; launch-gate.mjs refuses to publish when a page and this file disagree.",
+
+  "version": "0.2.0",
+  "origin": "https://gpscoord.com",
+  "repo": "https://github.com/c-u-l8er/GPSCoord",
+  "surface": "GPSCoord",
+  "layer": "coordinate",
+  "parent": "ComputeDriven",
+
+  "question": "What can we actually know from a coordinate?",
+
+  "surface_rung": "live_local",
+  "surface_rung_covers": "the converter at /convert/ — and nothing else on this domain",
+  "verified_at": "2026-08-16",
+
+  "status": {
+    "statement": "The converter and the distance tool run end to end in a browser on a developer machine. Nothing else on this domain is implemented.",
+    "source": "check.mjs in this repository, against eight reference points that PROJ 9.5.1 and NGA GEOTRANS independently confirmed.",
+    "limit": "This establishes that the arithmetic is correct. It does not establish that anyone has used it, that it behaves the same in a browser other than the one it was tested in, or that a single other thing described on this site exists. It has not been exercised on the deployed domain, so the rung is live_local and not live_deployed."
+  },
+
+  "advance": {
+    "next_rung": "live_deployed",
+    "requires": "Deploy, then load https://gpscoord.com/convert/ and convert one coordinate there. The domain currently answers every path with the same homepage, so until that check runs it is unknown whether the route resolves at all."
+  },
+
+  "converts": [
+    { "id": "dd",   "name": "Decimal degrees",             "note": "The interchange format. What an API returns.",        "rung": "live_local" },
+    { "id": "dms",  "name": "Degrees / minutes / seconds", "note": "Charts, deeds, aviation.",                            "rung": "live_local" },
+    { "id": "ddm",  "name": "Degrees / decimal minutes",   "note": "Marine and handheld GPS units.",                      "rung": "live_local" },
+    { "id": "utm",  "name": "UTM",                         "note": "Metres on a plane. Survey and engineering.",          "rung": "live_local" },
+    { "id": "mgrs", "name": "MGRS",                        "note": "One string, 1 m precision. Military and SAR.",        "rung": "live_local" }
+  ],
+
+  "unavailable": [
+    {
+      "id": "plus",
+      "name": "Plus Code",
+      "rung": "spec",
+      "reason": "Not implemented — see “the line”.",
+      "detail": "Open Location Code is pure arithmetic and openly specified, so it could join the converter with no data and no cost. It simply is not written yet, and the converter will not show a format it has not checked against a reference value.",
+      "needs": "An implementation and a reference-value check.",
+      "built": "no"
+    },
+    {
+      "id": "w3w",
+      "name": "what3words",
+      "rung": "spec",
+      "reason": "Unavailable client-side: it needs a licensed API.",
+      "detail": "Permanently unavailable here, not merely unbuilt. The wordlist and the assignment are proprietary and a correct conversion requires a licensed API call, so it cannot be a client-side function and will never appear in this converter.",
+      "needs": "A commercial licence and a server.",
+      "built": "no, and not planned"
+    }
+  ],
+
+  "not_knowable": [
+    {
+      "id": "admin",
+      "name": "Which country, state, county",
+      "rung": "spec",
+      "detail": "A point-in-polygon test against administrative boundaries. Cheap to compute, and entirely dependent on which boundary set you use — different sources disagree, especially at coastlines and disputed borders.",
+      "needs": "An administrative boundary set (OSM relations, Natural Earth, or a national cadastre) plus a spatial index.",
+      "built": "no"
+    },
+    {
+      "id": "elevation",
+      "name": "Elevation",
+      "rung": "spec",
+      "detail": "A raster sample — and a question about which vertical datum you meant. Height above the ellipsoid and height above mean sea level differ by tens of metres in places, and most sites never say which one they returned.",
+      "needs": "A DEM (SRTM 30 m, Copernicus) and a geoid model to convert between datums.",
+      "built": "no"
+    },
+    {
+      "id": "timezone",
+      "name": "Timezone",
+      "rung": "spec",
+      "detail": "Another polygon test, against boundaries that are political and change by legislation — not a function of longitude, however often that shortcut is taken.",
+      "needs": "A timezone boundary set plus the IANA database, refreshed whenever a legislature moves a clock.",
+      "built": "no"
+    },
+    {
+      "id": "address",
+      "name": "The address, or the name of the place",
+      "rung": "spec",
+      "detail": "Reverse geocoding, and the least honest thing a coordinate site does. There is often no single right answer: a place has a centroid, a label point, an administrative seat and a polygon, and the major sources pick different ones. Everyone silently returns one of them.",
+      "needs": "A geocoder run on our own hardware — the public one explicitly forbids this use.",
+      "built": "no"
+    }
+  ],
+
+  "zero_counts": [
+    {
+      "label": "Location pages",
+      "value": "0",
+      "witness": "Checked 2026-08-16: /tokyo, /us/texas/seguin, /airport/KJFK, /zip/78155 and a nonsense path all return HTTP 200 and the same homepage. The domain has a catch-all, not an index."
+    },
+    {
+      "label": "API endpoints",
+      "value": "0",
+      "witness": "Checked 2026-08-16: /api/v1/geocode responds content-type: text/html. No latency figure is published, because none has been measured."
+    }
+  ],
+
+  "pricing": {
+    "label": "Proposed pricing — not set, not approved, nothing is for sale",
+    "note": "These numbers price an API that does not exist. They are kept visible only so the intent can be argued with. There is no checkout, no waitlist and no mailing list — there would be nothing to send you.",
+    "tiers": [
+      { "name": "Free", "price": "$0", "calls": "100 calls/day" },
+      { "name": "Pro", "price": "$19", "calls": "5K calls/day" },
+      { "name": "Enterprise", "price": "$79", "calls": "50K calls/day" }
+    ]
+  },
+
+  "contact": {
+    "kind": "github_issues",
+    "url": "https://github.com/c-u-l8er/GPSCoord/issues",
+    "_comment": "Deliberately NOT a mailto: and deliberately NOT toolboxhvac's Formspree endpoint. If GPSCoord ever needs a non-GitHub correction channel it must have its own endpoint, or an explicit ruling to share one. Flagged [TRAVIS]."
+  },
+
+  "gates": {
+    "_comment": "Same shape as toolboxhvac.com/review-status.json. A gate may not read approved without its evidence fields, and launch-gate.mjs enforces that.",
+    "arithmetic_cross_check": {
+      "label": "Independent cross-check of the projections",
+      "status": "approved",
+      "description": "UTM, MGRS, distance and bearing compared against PROJ, NGA GEOTRANS and GeographicLib over 4,000 points and 1,500 pairs.",
+      "evidence": "records/verification.json",
+      "reviewer": "PROJ 9.5.1 / GEOTRANS via the mgrs package / GeographicLib 2.x",
+      "date": "2026-08-16"
+    },
+    "deployed_route_check": {
+      "label": "The converter answers on the deployed domain",
+      "status": "pending",
+      "description": "Load https://gpscoord.com/convert/ and convert one coordinate there. Until this runs, the deployed rung is unknown — the domain answers every path with the same homepage.",
+      "evidence": null,
+      "reviewer": null,
+      "date": null
+    },
+    "independent_use": {
+      "label": "Someone who is not us produced a result with it",
+      "status": "pending",
+      "description": "The only rung nobody here can award themselves. A reported conversion, a filed correction, or a fork that runs the check.",
+      "evidence": null,
+      "reviewer": null,
+      "date": null
+    }
+  }
+}
