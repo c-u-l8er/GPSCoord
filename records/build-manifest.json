@@ -1,0 +1,27 @@
+{
+  "status": "complete",
+  "note": "Written last, only on success. launch-gate.mjs recomputes every hash below and refuses on any mismatch — an artifact this build did not emit, or a source that has moved since it did.",
+  "built_at": "2026-08-17T16:48:06.319Z",
+  "version": "0.2.0",
+  "outputs": {
+    "./index.html": "7b40da9ab2b63f72fdf0d2c0a57802f26231dbabdbeb5c166299696a63a9c501",
+    "./globe.js": "59571fc94828e8485371c63b178054e7da38a229ee5039b2fb6bbe6f93dfd83b",
+    "./contact.js": "e3b8543f0df06559cd224786abdf05d9e7ade1973b00528bed79d5e48dcea60d",
+    "./convert/index.html": "fd6d301472fae5c9cd81f5663b372d436a5fa5df044b59f31a860576d9d63e70"
+  },
+  "inputs": {
+    "./build-site.mjs": "e2c86289a6fd7d5a09472f3a7cbc14053b20aa2576b92de790b76842d282b755",
+    "./package.json": "74077ef8c766ee8c4e9dff6289c943d0a3d719646e231ea99e2a0e3a9027510a",
+    "./src/app.js": "ad0b8be7d227aee8e9f31622cb194a3979d853a6f71e02eb5a6565eaa58664b4",
+    "./src/contact.js": "a9f7c77cf6ed7461e0186d9c6ecc69ef7a8650d98c2ece90595c6ee54ed98d63",
+    "./src/convert.html": "ed697f3d149d0c94317b5f371dec2b6646e3eb87fcd5e7d610e94e733d380ed0",
+    "./src/coord.mjs": "fb0c8ce6b6b525dd36d41666671417452d2dea82cd8476661d64214dba3e47e4",
+    "./src/globe.js": "179be4212312f5f404e39e59e878804da31f8eaf2bbf0ea4db672bf931c73f7f",
+    "./src/landing.html": "5c7d99ef0854f993a3b132248a90e23c5f7097e33c2e92476c4866121692a1df",
+    "./src/shell.css": "af45ee9edd9776991eb6a4be1b135409d8ea23160173eb5055db379022cb34f3",
+    "./records/reference-pairs.json": "0a5a12c0b80d34043b3e52c89c1fdc330afa3f8c8a3b173a0a4efff13b07b088",
+    "./records/reference-points.json": "5fba0006471d50f880fa3b14abc7ce9a0e8ae68664965893ffb767ebbcd4c6d2",
+    "./records/surface.json": "3a6c225a72631ec8225fd552aac843a85cd4fed0ef7e95c9b315d5b740dc2f6d",
+    "./records/verification.json": "0956006fdeac663b2676350a4300a641e78ad4aca73d1012b219799493fb7970"
+  }
+}

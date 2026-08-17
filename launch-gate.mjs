@@ -10,9 +10,11 @@
    the rung has not earned, an unrendered token, a dead mailbox.
    ========================================================================== */
 import { readFileSync, existsSync } from "fs";
+import { createHash } from "crypto";
 
 const read = (p) => readFileSync(p, "utf8");
 const J = (p) => JSON.parse(read(p));
+const sha256 = (p) => createHash("sha256").update(readFileSync(p)).digest("hex");
 
 const surface = J("./records/surface.json");
 const refPoints = J("./records/reference-points.json");
@@ -31,6 +33,59 @@ for (const f of ["./index.html", "./convert/index.html"]) {
 const landing = read("./index.html");
 const app = read("./convert/index.html");
 const pages = { "/": landing, [APP]: app };
+
+/* ==========================================================================
+   0. THE ARTIFACT CAME FROM THIS BUILD — SHELL.md r6, hole 2
+
+   This is first because everything below it reads the artifact, and reading a
+   stale artifact carefully is worse than not reading it: it produces a page of
+   PASS lines about a file nobody just built. If build-site.mjs threw — and
+   throwing on a record that disagrees with the arithmetic is its JOB — the
+   previous index.html survived on disk and every check here passed on it.
+
+   The build now invalidates records/build-manifest.json before it reads a
+   single record and rewrites it, with hashes of both sides, only on success:
+
+     outputs  the artifact is byte-for-byte what that run emitted
+              → catches a hand-edit made after a good build
+     inputs   no source has moved since that run
+              → catches a build that threw, and a record edited without one
+
+   Outputs alone are not enough, and this is the subtle half: a build that
+   throws BEFORE its first write leaves old artifacts matching an old manifest
+   perfectly. Only the inputs say that the world has moved on.
+   ========================================================================== */
+{
+    const MANIFEST = "./records/build-manifest.json";
+    T("the build left a manifest", existsSync(MANIFEST));
+    let man = null;
+    if (existsSync(MANIFEST)) {
+        try { man = J(MANIFEST); } catch (e) { T("the build manifest parses", false, e.message); }
+    }
+    T("the build that wrote the manifest finished",
+        !!man && man.status === "complete",
+        man ? `status ${JSON.stringify(man.status)}` : "no manifest");
+    if (man && man.status === "complete") {
+        T("the manifest carries the release under test", man.version === pkg.version,
+            `${man.version} / ${pkg.version}`);
+        /* Every artifact this gate then reads must be one the manifest owns.
+           A page that is served but was never emitted is the same defect
+           wearing a different hat. */
+        for (const f of ["./index.html", "./convert/index.html", "./globe.js", "./contact.js"])
+            T(`the manifest owns the artifact ${f}`, f in (man.outputs || {}));
+        const drift = [];
+        for (const [side, list] of [["output", man.outputs], ["input", man.inputs]])
+            for (const [p, want] of Object.entries(list || {})) {
+                if (!existsSync(p)) { drift.push(`${side} ${p} is gone`); continue; }
+                const got = sha256(p);
+                if (got !== want) drift.push(`${side} ${p} ${got.slice(0, 12)} != ${want.slice(0, 12)}`);
+            }
+        T("every artifact is byte-for-byte the one this build emitted, and no source has moved since",
+            drift.length === 0,
+            drift.length ? drift.join(" ; ")
+                : `${Object.keys(man.outputs).length} outputs + ${Object.keys(man.inputs).length} inputs, all hashes match`);
+    }
+}
 
 /* ---------- 1. release identity ---------- */
 T("release identity: package.json == records/surface.json",
@@ -62,9 +117,19 @@ T("the application links back to the question", app.includes('href="/"'));
 {
     const tags = [...landing.matchAll(/<script\b([^>]*)>([\s\S]*?)<\/script>/gi)];
     T("the landing page ships no inline JavaScript", tags.every((t) => t[2].trim() === ""));
-    T("the landing page loads exactly one script, and it is the identity animation",
-        tags.length === 1 && /\bsrc="\/globe\.js"/.test(tags[0][1]) && /\bdefer\b/.test(tags[0][1]),
-        `${tags.length} script tag(s)`);
+    /* Two, and both named: the identity animation and the contact upgrade.
+       Enumerated rather than counted, because "exactly N scripts" is a check
+       that gets relaxed by one every time somebody adds a script. */
+    const WANT_SCRIPTS = ["/globe.js", "/contact.js"];
+    const srcs = tags.map((t) => (t[1].match(/\bsrc="([^"]*)"/) || [])[1]);
+    T("the landing page loads exactly the two scripts it declares, both deferred",
+        srcs.length === WANT_SCRIPTS.length &&
+        WANT_SCRIPTS.every((w, i) => srcs[i] === w) &&
+        tags.every((t) => /\bdefer\b/.test(t[1])),
+        srcs.join(", ") || "none");
+    /* Neither may be load-bearing for the page's meaning. globe.js is proved
+       inert below; contact.js is proved inert by the form working without it,
+       which is what the action/method check next door is for. */
 }
 
 /* ---------- 3b. the UI may only call arithmetic that exists ----------
@@ -82,7 +147,24 @@ T("the application links back to the question", app.includes('href="/"'));
 
 /* ---------- 4. claims that were retracted may not come back ----------
    Every string here was removed by commit 07d67ef because it had no witness.
-   This is the retraction made structural: it cannot be undone by an edit. */
+   This is the retraction made structural: it cannot be undone by an edit.
+
+   SHELL.md r6, hole 1 — THIS CHECK DETECTED WHERE IT HAD TO COUNT, and it
+   made a real deliberate break pass. It used to ask:
+
+       is this string present?  and is it also somewhere in the retraction?
+
+   Both true, so both fine — for ANY number of occurrences, ANYWHERE on the
+   page. A page could keep its retraction word for word and reinstate the
+   fabricated coordinate in the hero, and this file called it clean. The
+   retraction became a licence to say the thing it retracts.
+
+   So: COUNT, and BOUND. Every occurrence of a blocklisted string must be
+   inside the retraction block, and there may be at most ALLOWED (default 1)
+   of them there. Naming a wrong value once is what a retraction is; naming it
+   twice is prose, and prose is where a claim hides. A second legitimate
+   mention is then a deliberate edit to the number below, reviewed, rather
+   than an accident nothing notices. */
 const RETRACTED = [
     "200K+", "Active Pathfinders", "Pathfinders",
     "<50ms", "195 Countries", "195 countries",
@@ -90,14 +172,34 @@ const RETRACTED = [
     "Launching 2026", "Get Early Access",
     "14RPU9784270738", "597842 3270738",
 ];
-for (const [path, body] of Object.entries(pages)) {
-    for (const s of RETRACTED) {
-        // The retraction paragraph is the one place the wrong values may appear,
-        // because naming them is what a retraction is.
-        const inRetraction = body.includes("Retraction —") &&
-            body.split("Retraction —")[1].split("</div>")[0].includes(s);
-        T(`${path} does not reinstate "${s}"`, !body.includes(s) || inRetraction);
+const ALLOWED = { "14RPU9784270738": 1, "597842 3270738": 1 };
+const occurrences = (h, s) => h.split(s).length - 1;
+{
+    /* The block is delimited structurally, not by a sentence: splitting on the
+       words "Retraction —" would hand the whole rest of the page to any future
+       revision that mentions them in a heading somewhere else. */
+    const RETRACT_RE = /<div class="retract">[\s\S]*?<\/div>/g;
+    for (const [path, body] of Object.entries(pages)) {
+        const blocks = body.match(RETRACT_RE) || [];
+        const zone = blocks.join("\n");
+        for (const b of blocks)
+            T(`${path} the retraction block is flat (a nested <div> would truncate the zone)`,
+                !/<div\b/.test(b.slice(b.indexOf(">") + 1)));
+        for (const s of RETRACTED) {
+            const total = occurrences(body, s);
+            const inside = occurrences(zone, s);
+            const cap = ALLOWED[s] ?? 1;
+            T(`${path} does not reinstate "${s}"`,
+                total === inside && inside <= cap,
+                total === 0 ? "absent"
+                    : `${total} occurrence(s), ${inside} inside the retraction, cap ${cap}`);
+        }
     }
+    /* A retraction that is deleted un-retracts everything, silently. The
+       landing page carries this one and must keep carrying it. */
+    T("the landing page still carries its retraction",
+        (landing.match(RETRACT_RE) || []).length === 1 && /Retraction (&mdash;|—)/.test(landing),
+        `${(landing.match(RETRACT_RE) || []).length} retraction block(s)`);
 }
 
 /* ---------- 5. no dead mailbox anywhere ---------- */
@@ -106,6 +208,59 @@ for (const [path, body] of Object.entries(pages)) {
 }
 T("the correction channel is a live URL, not a mailbox",
     /^https:\/\//.test(surface.contact.url) && surface.contact.kind !== "mailto");
+
+/* ---------- 5b. the correction channel is a form that works — SHELL.md r9 ----------
+   Ruled by Travis 2026-08-17. The [TRAVIS] blocker this surface carried since
+   2026-08-16 — no endpoint of its own — is answered with the ComputeDriven one.
+
+   Everything here is checked on the ARTIFACT rather than the source, because
+   what matters is the form a visitor is handed. The endpoint is declared ONCE
+   in the frozen record and the page is compared against it, so a page cannot
+   invent an endpoint of its own; and the honeypot is checked by name, because
+   a honeypot dropped in a refactor fails silently and invisibly — no error, no
+   visual change, just more spam six weeks later. */
+{
+    const c = surface.contact;
+    /* PINNED, not merely well-formed. Comparing the page against the record
+       only proves the two agree — move the record and they agree on a wrong
+       endpoint, which is exactly what happened the first time this check was
+       broken on purpose. r9 RULED one endpoint; this is that ruling, written
+       where a build can enforce it. */
+    const RULED_ENDPOINT = "https://formspree.io/f/xaewoadr";
+    T("the record declares the endpoint SHELL.md r9 ruled",
+        c.kind === "form" && c.form_endpoint === RULED_ENDPOINT,
+        c.form_endpoint || `kind ${c.kind}`);
+    const form = (landing.match(/<form\b[^>]*class="say"[^>]*>[\s\S]*?<\/form>/) || [])[0] || "";
+    T("the landing page carries the contact form", !!form);
+    const open = (form.match(/<form\b[^>]*>/) || [""])[0];
+    T("the form posts to the endpoint the record declares",
+        new RegExp(`action="${(c.form_endpoint || "x").replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}"`).test(open),
+        (open.match(/action="([^"]*)"/) || [])[1] || "no action");
+    /* Without action AND method it is not a form, it is a div waiting for
+       JavaScript — and this page's whole contract is that it works without. */
+    T("the form works with JavaScript off: it has a real method",
+        /\bmethod="POST"/i.test(open), (open.match(/method="[^"]*"/) || ["no method"])[0]);
+    T("the form defers validation messages to the page, not the browser",
+        /\bnovalidate\b/i.test(open));
+    T("the form carries the _gotcha honeypot",
+        /<input[^>]*\bname="_gotcha"[^>]*>/.test(form) &&
+        /name="_gotcha"[^>]*tabindex="-1"/.test(form.replace(/\n/g, " ")) &&
+        /name="_gotcha"[^>]*aria-hidden="true"/.test(form.replace(/\n/g, " ")),
+        (form.match(/<input[^>]*_gotcha[^>]*>/) || ["MISSING"])[0]);
+    T("the reply paragraph is announced to a screen reader",
+        /<p class="say-msg" role="status" aria-live="polite">/.test(form));
+    T("the form asks for the message this portfolio most needs",
+        /a number of ours you think is wrong/.test(form));
+    /* The honeypot must be off-screen, not display:none: some bots skip
+       anything a stylesheet has explicitly hidden, which defeats it. */
+    T("the honeypot is hidden by position, not by display",
+        /\.say input\[name=_gotcha\]\{[^}]*position:absolute/.test(landing) &&
+        !/\.say input\[name=_gotcha\]\{[^}]*display:none/.test(landing));
+    T("the form's own script is an upgrade, not the mechanism",
+        read("./src/contact.js").includes("preventDefault") &&
+        /res\.ok|r\.ok/.test(read("./src/contact.js")),
+        "success printed only on a 2xx from the endpoint");
+}
 
 /* ---------- 6. every rung on the artifact is a real rung ---------- */
 const RUNGS = ["spec", "in_tree", "live_local", "live_deployed", "external", "?"];
@@ -246,10 +401,16 @@ for (const m of anim.matchAll(/"([^"\\\n]{3,})"|'([^'\\\n]{3,})'/g)) ANIM_STRS.a
 {
     const ENT = { "&nbsp;": " ", "&ensp;": " ", "&mdash;": "—", "&minus;": "−",
         "&amp;": "&", "&copy;": "©", "&lt;": "<", "&gt;": ">", "&quot;": '"', "&times;": "×" };
+    /* SHELL.md r8 — COMMENTS COME OFF FIRST, as their own pass. `<[^>]+>`
+       stops at the first `>`, so a comment containing one (this repo's are
+       full of them: `-->`, `a > b`) is only partly removed and its remainder
+       counts as visible page text. Stripping <script> first is also wrong in
+       the same way: a comment mentioning a script tag swallows everything up
+       to the real closing tag. Order is the fix, and it is free. */
     const texts = landing
+        .replace(/<!--[\s\S]*?-->/g, "<>")
         .replace(/<script[\s\S]*?<\/script>/gi, "<>")
         .replace(/<style[\s\S]*?<\/style>/gi, "<>")
-        .replace(/<!--[\s\S]*?-->/g, "<>")
         .split(/<[^>]*>/)
         .map((s) => s.replace(/&\w+;/g, (e) => (e in ENT ? ENT[e] : e)).trim())
         .filter(Boolean);
@@ -365,6 +526,9 @@ const CONTRAST_PAIRS = [
     ["--data", "--ink2", "measured values, the live_local rung chip"],
     ["--data", ["--ink2", "--data-soft"], "the live_local chip on its own tint"],
     ["--warn", "--ink2", "the LIMIT row, the claim tag, the ? rung"],
+    ["--data", "--ink", "the contact form's reply on success"],
+    ["--warn", "--ink", "the contact form's reply on failure"],
+    ["--fg", "--ink2", "what you type into the contact form"],
     ["--warn", ["--ink2", "rgba(245,196,81,.06)"], "the claim tag on its own tint"],
     ["#180d04", "--acc", "the label inside a primary button"],
     ["#9aa4b2", "--ink2", "the spec rung chip"],
@@ -410,6 +574,342 @@ for (const [path, body] of Object.entries(pages)) {
     T(`${path} every interactive element has a visible :hover`, naked.length === 0,
         naked.length ? `no hover for: ${naked.join(", ")}` : `${handles.size} kinds, all covered`);
     T(`${path} declares a focus-visible ring`, /:focus-visible\s*\{/.test(styles));
+}
+
+/* ==========================================================================
+   15. THE CTA PAINTS THE COLOUR ITS OWN RULE DECLARES — SHELL.md r7
+
+   Check 13 above reads DECLARED tokens: it proves --acc on --ink is legible.
+   It cannot see a button that never receives its declared colour at all, and
+   this page shipped exactly that:
+
+       .top nav a{color:var(--fg2)}       specificity 0,2,1   WINS
+       .btn{background:var(--acc);color:#180d04}   0,1,0       loses
+
+   so the header CTA painted rgba(233,236,241,.62) on rgb(255,138,61) —
+   measured in a browser 2026-08-17, before the fix — while the SAME button
+   in the hero painted rgb(24,13,4). Every contrast check passed, because
+   every contrast check was reading the token the rule declares rather than
+   the colour the element ends up with.
+
+   So this resolves the cascade over the artifact: the whole stylesheet, in
+   source order, with specificity, !important, @media, :not() and inline
+   style, against a real ancestor tree parsed out of the emitted HTML. For
+   every .btn it asks WHICH RULE WINS `color`, and refuses unless that rule
+   is itself about buttons — .btn, .btn.ghost, .btn:hover. A colour handed
+   to a button by a rule that knows nothing about buttons is the defect,
+   whatever value it happens to land on.
+
+   Both states are checked. At rest the pre-fix nav CTA was washed-out light
+   ink on saturated orange; at :hover `.top nav a:hover` repainted it
+   rgb(255,138,61) — --acc ON --acc, the button vanishing under the pointer.
+   That second half was not in the r7 report and is the reason :hover is not
+   optional here.
+
+   VALIDATED AGAINST A BROWSER, both before and after the fix: the resolver's
+   answer equals getComputedStyle().color for all 3 .btn elements on / and
+   all 5 on wrand.cc, at rest and hovered. A resolver that disagreed with a
+   browser would be worse than no check at all.
+   ========================================================================== */
+{
+    const VOIDEL = new Set(["area", "base", "br", "col", "embed", "hr", "img", "input",
+        "link", "meta", "param", "source", "track", "wbr"]);
+    const STATEP = new Set(["hover", "focus", "focus-visible", "focus-within",
+        "active", "visited", "link", "any-link", "target"]);
+    const splitTop = (s, ch) => {
+        const out = []; let buf = "", d = 0;
+        for (const c of s) {
+            if (c === "(") d++; else if (c === ")") d--;
+            if (c === ch && d === 0) { out.push(buf); buf = ""; continue; }
+            buf += c;
+        }
+        out.push(buf); return out;
+    };
+    const declsOf = (body) => splitTop(body, ";").map((part) => {
+        const k = part.indexOf(":");
+        if (k < 0) return null;
+        const prop = part.slice(0, k).trim().toLowerCase();
+        let val = part.slice(k + 1).trim();
+        const imp = /!important\s*$/i.test(val);
+        if (imp) val = val.replace(/!important\s*$/i, "").trim();
+        return prop ? { prop, val, imp } : null;
+    }).filter(Boolean);
+
+    /* every <style> in the artifact, flattened, @media preserved as context */
+    function sheetOf(html) {
+        const css = [...html.matchAll(/<style[^>]*>([\s\S]*?)<\/style>/gi)]
+            .map((m) => m[1]).join("\n").replace(/\/\*[\s\S]*?\*\//g, "");
+        const rules = []; let order = 0;
+        (function walk(src, media) {
+            let i = 0;
+            for (;;) {
+                const open = src.indexOf("{", i);
+                if (open < 0) break;
+                const prelude = src.slice(i, open).trim();
+                let depth = 1, j = open + 1;
+                while (j < src.length && depth) {
+                    if (src[j] === "{") depth++; else if (src[j] === "}") depth--;
+                    j++;
+                }
+                const body = src.slice(open + 1, j - 1);
+                if (prelude.startsWith("@")) {
+                    /* rules inside a @media are candidates too: a colour that
+                       only breaks at 430px is still a colour that breaks. */
+                    if (/^@(media|supports|layer|scope)\b/i.test(prelude))
+                        walk(body, media ? media + " / " + prelude : prelude);
+                } else if (prelude) {
+                    for (const sel of splitTop(prelude, ",")) {
+                        const s = sel.trim();
+                        if (s) rules.push({ sel: s, body, order: order++, media: media || "" });
+                    }
+                }
+                i = j;
+            }
+        })(css, "");
+        return rules;
+    }
+
+    /* the artifact as an ancestor tree — `.top nav a` needs real ancestry */
+    function domOf(html) {
+        const root = { tag: "#root", attrs: {}, cls: new Set(), children: [], parent: null };
+        const stack = [root]; const all = [];
+        const re = /<!--[\s\S]*?-->|<!\[[\s\S]*?\]>|<!doctype[^>]*>|<(script|style)\b[^>]*>[\s\S]*?<\/\1\s*>|<\/([a-zA-Z][\w-]*)\s*>|<([a-zA-Z][\w-]*)((?:"[^"]*"|'[^']*'|[^>"'])*)>/gi;
+        let m;
+        while ((m = re.exec(html))) {
+            if (m[1]) continue;
+            if (m[2]) {
+                const tag = m[2].toLowerCase();
+                for (let i = stack.length - 1; i > 0; i--)
+                    if (stack[i].tag === tag) { stack.length = i; break; }
+                continue;
+            }
+            if (!m[3]) continue;
+            const attrs = {};
+            for (const a of (m[4] || "").matchAll(/([\w:.-]+)(?:\s*=\s*("([^"]*)"|'([^']*)'|([^\s"'>]+)))?/g))
+                attrs[a[1].toLowerCase()] = a[3] ?? a[4] ?? a[5] ?? "";
+            const el = {
+                tag: m[3].toLowerCase(), attrs,
+                cls: new Set((attrs.class || "").trim().split(/\s+/).filter(Boolean)),
+                children: [], parent: stack[stack.length - 1],
+            };
+            el.parent.children.push(el);
+            all.push(el);
+            if (!VOIDEL.has(el.tag) && !/\/\s*$/.test(m[4] || "")) stack.push(el);
+        }
+        return all;
+    }
+
+    function parseCompound(s) {
+        const c = { tag: "", id: "", classes: [], attrs: [], pseudos: [], nots: [], pseudoEl: false, unknown: [] };
+        let i = 0;
+        const name = () => { let n = ""; while (i < s.length && /[\w-]/.test(s[i])) n += s[i++]; return n; };
+        while (i < s.length) {
+            const ch = s[i];
+            if (ch === "*") { c.tag = "*"; i++; }
+            else if (ch === ".") { i++; c.classes.push(name()); }
+            else if (ch === "#") { i++; c.id = name(); }
+            else if (ch === "[") {
+                const end = s.indexOf("]", i);
+                const mm = s.slice(i + 1, end).match(/^([\w:-]+)\s*(?:([~|^$*]?=)\s*"?([^"\]]*)"?)?$/);
+                if (mm) c.attrs.push({ name: mm[1].toLowerCase(), op: mm[2] || "", val: mm[3] ?? "" });
+                i = end + 1;
+            } else if (ch === ":") {
+                if (s[i + 1] === ":") { c.pseudoEl = true; i += 2; name(); continue; }
+                i++;
+                const n = name();
+                if (s[i] === "(") {
+                    let d = 1, j = i + 1;
+                    while (j < s.length && d) { if (s[j] === "(") d++; else if (s[j] === ")") d--; j++; }
+                    const arg = s.slice(i + 1, j - 1); i = j;
+                    if (n === "not") for (const p of splitTop(arg, ",")) c.nots.push(parseCompound(p.trim()));
+                    else c.unknown.push(n + "()");
+                } else if (STATEP.has(n) || n === "root") c.pseudos.push(n);
+                else c.unknown.push(n);
+            } else if (/[\w-]/.test(ch)) c.tag = name().toLowerCase();
+            else i++;
+        }
+        return c;
+    }
+    function parseSelector(sel) {
+        const parts = []; let buf = "", d = 0, comb = null;
+        for (let i = 0; i < sel.length; i++) {
+            const ch = sel[i];
+            if (ch === "(") d++; else if (ch === ")") d--;
+            if (d === 0 && /[\s>+~]/.test(ch)) {
+                let k = " ", j = i;
+                while (j < sel.length && /[\s>+~]/.test(sel[j])) { if (sel[j] !== " ") k = sel[j]; j++; }
+                if (buf) { parts.push({ comb, c: parseCompound(buf) }); buf = ""; comb = k; }
+                i = j - 1; continue;
+            }
+            buf += ch;
+        }
+        if (buf) parts.push({ comb, c: parseCompound(buf) });
+        return parts;
+    }
+    function specificity(parts) {
+        const s = [0, 0, 0];
+        (function add(list) {
+            for (const p of list) {
+                const c = p.c || p;
+                if (c.id) s[0]++;
+                s[1] += c.classes.length + c.attrs.length + c.pseudos.length + c.unknown.length;
+                if (c.tag && c.tag !== "*") s[2]++;
+                if (c.pseudoEl) s[2]++;
+                add(c.nots);
+            }
+        })(parts);
+        return s;
+    }
+    const prevSib = (el) => {
+        const k = el.parent ? el.parent.children.indexOf(el) : -1;
+        return k > 0 ? el.parent.children[k - 1] : null;
+    };
+    /* true / false / null — and null means THE RESOLVER CANNOT DECIDE, which
+       is refused rather than waved through. A check that cannot decide and
+       reports a pass is the thing this whole file exists to prevent. */
+    function matchCompound(el, c, state) {
+        if (c.pseudoEl) return false;
+        if (c.unknown.length) return null;
+        if (c.tag && c.tag !== "*" && el.tag !== c.tag) return false;
+        if (c.id && el.attrs.id !== c.id) return false;
+        for (const cl of c.classes) if (!el.cls.has(cl)) return false;
+        for (const a of c.attrs) {
+            const v = el.attrs[a.name];
+            if (v === undefined) return false;
+            if (a.op === "=" && v !== a.val) return false;
+            if (a.op === "~=" && !v.split(/\s+/).includes(a.val)) return false;
+            if (a.op === "^=" && !v.startsWith(a.val)) return false;
+            if (a.op === "$=" && !v.endsWith(a.val)) return false;
+            if (a.op === "*=" && !v.includes(a.val)) return false;
+        }
+        for (const p of c.pseudos) {
+            if (p === "root") { if (el.tag !== "html") return false; continue; }
+            if (!state.has(p)) return false;
+        }
+        for (const n of c.nots) {
+            const r = matchCompound(el, n, state);
+            if (r === null) return null;
+            if (r) return false;
+        }
+        return true;
+    }
+    function matchFrom(el, parts, idx, state) {
+        const r = matchCompound(el, parts[idx].c, state);
+        if (r !== true) return r;
+        if (idx === 0) return true;
+        const comb = parts[idx].comb;
+        let undec = false;
+        if (comb === " " || comb === "~") {
+            const next = comb === " " ? (e) => e.parent : prevSib;
+            for (let p = next(el); p && p.tag !== "#root"; p = next(p)) {
+                const q = matchFrom(p, parts, idx - 1, state);
+                if (q === null) undec = true; else if (q) return true;
+            }
+            return undec ? null : false;
+        }
+        if (comb === ">")
+            return el.parent && el.parent.tag !== "#root" ? matchFrom(el.parent, parts, idx - 1, state) : false;
+        if (comb === "+") {
+            const s = prevSib(el);
+            return s ? matchFrom(s, parts, idx - 1, state) : false;
+        }
+        return false;
+    }
+    const expand = (v, vars, n = 0) => (n > 8 || !/var\(/.test(v) ? v : expand(
+        v.replace(/var\(\s*(--[\w-]+)\s*(?:,([^()]*))?\)/g,
+            (m, k, fb) => (vars[k] !== undefined ? vars[k] : (fb || "").trim())), vars, n + 1));
+    function normColour(v) {
+        const s = String(v).trim().toLowerCase();
+        let m = /^#([0-9a-f]{3,8})$/.exec(s);
+        if (m) {
+            let h = m[1];
+            if (h.length === 3 || h.length === 4) h = h.split("").map((c) => c + c).join("");
+            const p = [0, 2, 4].map((i) => parseInt(h.slice(i, i + 2), 16));
+            if (h.length === 8) return `rgba(${p[0]}, ${p[1]}, ${p[2]}, ${+(parseInt(h.slice(6, 8), 16) / 255).toFixed(2)})`;
+            return `rgb(${p[0]}, ${p[1]}, ${p[2]})`;
+        }
+        m = /^rgba?\(([^)]*)\)$/.exec(s);
+        if (m) {
+            const p = m[1].split(/[,\s/]+/).filter(Boolean).map(Number);
+            return p.length > 3 && p[3] !== 1
+                ? `rgba(${p[0]}, ${p[1]}, ${p[2]}, ${p[3]})`
+                : `rgb(${p[0]}, ${p[1]}, ${p[2]})`;
+        }
+        return { white: "rgb(255, 255, 255)", black: "rgb(0, 0, 0)", transparent: "rgba(0, 0, 0, 0)" }[s] || s;
+    }
+
+    /* Resolve `color` on one element: the winning declaration, and the rule
+       it came from. Inheritance is walked because a .btn need not declare
+       one at all. */
+    function resolveColour(el, rules, cache, vars, state) {
+        let best = null; const undecidable = [];
+        for (const r of rules) {
+            if (!cache.has(r)) {
+                const parts = parseSelector(r.sel);
+                cache.set(r, { parts, spec: specificity(parts), decls: declsOf(r.body) });
+            }
+            const p = cache.get(r);
+            const m = matchFrom(el, p.parts, p.parts.length - 1, state);
+            if (m === null) {
+                /* only rules that could have changed the answer are worth naming */
+                if (p.decls.some((d) => d.prop === "color")) undecidable.push(r.sel);
+                continue;
+            }
+            if (!m) continue;
+            for (const d of p.decls) {
+                if (d.prop !== "color") continue;
+                const cand = { sel: r.sel, media: r.media, spec: p.spec, imp: d.imp, val: d.val, order: r.order };
+                if (!best) { best = cand; continue; }
+                if (cand.imp !== best.imp) { if (cand.imp) best = cand; continue; }
+                let decided = false;
+                for (let i = 0; i < 3 && !decided; i++)
+                    if (cand.spec[i] !== best.spec[i]) { if (cand.spec[i] > best.spec[i]) best = cand; decided = true; }
+                if (!decided && cand.order >= best.order) best = cand;
+            }
+        }
+        const inline = el.attrs.style && declsOf(el.attrs.style).filter((d) => d.prop === "color").pop();
+        if (inline) best = { sel: "style= attribute", media: "", spec: [1, 0, 0], imp: inline.imp, val: inline.val, order: 1e9 };
+        if (!best) {
+            if (el.parent && el.parent.tag !== "#root") return resolveColour(el.parent, rules, cache, vars, state);
+            return { sel: null, value: null, undecidable };
+        }
+        return { sel: best.sel, media: best.media, value: normColour(expand(best.val, vars)), undecidable };
+    }
+
+    for (const [path, body] of Object.entries(pages)) {
+        const rules = sheetOf(body);
+        const vars = {};
+        for (const r of rules)
+            if (/^(:root|html)$/.test(r.sel))
+                for (const d of declsOf(r.body)) if (d.prop.startsWith("--")) vars[d.prop] = d.val;
+        const cache = new Map();
+        const btns = domOf(body).filter((e) => e.cls.has("btn"));
+        const bad = [], undecided = new Set(), seen = [];
+        for (const state of [new Set(), new Set(["hover"])]) {
+            const label = state.size ? ":hover" : "at rest";
+            for (const b of btns) {
+                const r = resolveColour(b, rules, cache, vars, state);
+                r.undecidable.forEach((s) => undecided.add(s));
+                /* THE RULE: a button's colour is decided by a rule about
+                   buttons. `.top nav a` is not one, at any specificity. */
+                const subject = parseSelector(r.sel || "")[parseSelector(r.sel || "").length - 1];
+                const owned = !!subject && subject.c.classes.includes("btn");
+                seen.push(`${label} ${b.attrs.class} = ${r.value}`);
+                if (!owned)
+                    bad.push(`<${b.tag} class="${b.attrs.class}"> ${label} paints ${r.value}, handed to it by ` +
+                        `${JSON.stringify(r.sel)}${r.media ? " in " + r.media : ""} — not a .btn rule`);
+            }
+        }
+        T(`${path} every .btn is coloured by a .btn rule, resting and hovered`,
+            bad.length === 0 && undecided.size === 0,
+            bad.length ? bad.join(" ; ")
+                : undecided.size ? `the resolver cannot decide: ${[...undecided].join(", ")}`
+                    : `${btns.length} .btn × 2 states — ${[...new Set(seen.map((s) => s.split(" = ")[1]))].join(", ")}`);
+    }
+    /* A landing page that has stopped issuing a CTA would pass the loop above
+       vacuously, and vacuous is how a check dies quietly. */
+    T("the landing page still has a .btn for that check to be about",
+        domOf(landing).filter((e) => e.cls.has("btn")).length > 0);
 }
 
 console.log(`\n${pass} passed, ${fail} failed (publication gate)`);

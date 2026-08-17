@@ -57,8 +57,18 @@ img,canvas,svg{max-width:100%}
 .logo span{color:var(--acc)}
 .logo:hover{color:var(--acc)}
 .top nav{display:flex;gap:22px;align-items:center;flex-wrap:wrap}
-.top nav a{color:var(--fg2);text-decoration:none;font-size:var(--sm);font-weight:500;white-space:nowrap}
-.top nav a:hover{color:var(--acc)}
+/* SHELL.md r7. `.top nav a` is specificity 0,2,1 and `.btn` is 0,1,0, so the
+   header CTA painted --fg2 on --acc — washed-out light text on saturated
+   orange — while the SAME button in the hero painted #180d04 correctly.
+   Measured here before the fix: rgba(233,236,241,.62) on rgb(255,138,61).
+   The fix scopes the nav rule rather than raising .btn, because raising .btn
+   would only move the conflict somewhere else. :hover needs it too — the
+   unscoped .top nav a:hover repainted the CTA --acc on --acc, which is a
+   button that vanishes under the pointer. launch-gate.mjs §15 now resolves
+   the cascade over the artifact and refuses any .btn whose winning colour
+   comes from a rule that is not about buttons. */
+.top nav a:not(.btn){color:var(--fg2);text-decoration:none;font-size:var(--sm);font-weight:500;white-space:nowrap}
+.top nav a:not(.btn):hover{color:var(--acc)}
 .btn{display:inline-block;background:var(--acc);color:#180d04;font-weight:700;border-radius:var(--r);padding:11px 20px;text-decoration:none;font-size:var(--sm)}
 .btn.ghost{background:transparent;color:var(--fg);border:1px solid var(--line2);font-weight:500}
 .btn:hover{filter:brightness(1.08)}
@@ -161,6 +171,31 @@ code{font-family:var(--mono);font-size:.92em;background:rgba(255,255,255,.05);pa
 .cta code{color:var(--data);background:none;padding:0}
 .ctagroup+.ctagroup{margin-top:34px}
 
+/* --- the correction channel (SHELL.md r9) ---
+   A real <form action method>, so it posts with scripting off. contact.js only
+   upgrades it to an inline reply; it is not what makes it work. The honeypot is
+   moved OFF-SCREEN rather than display:none — some bots skip anything a
+   stylesheet has explicitly hidden, which defeats the point of having one. */
+/* The first prose link on this page arrived with the contact section. There
+   was no rule for one, so it would have rendered as browser-default blue with
+   no hover — the .logo defect again, one element along. */
+.lede a{color:var(--acc);text-decoration:underline;text-underline-offset:3px}
+.lede a:hover{color:var(--fg)}
+.say{max-width:62ch;margin-top:22px}
+.say-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:14px}
+.say-f>span{display:block;font-family:var(--mono);font-size:var(--xs);text-transform:uppercase;letter-spacing:.12em;color:var(--fg3);margin-bottom:6px}
+.say input[type=email],.say textarea{width:100%;background:var(--ink2);border:1px solid var(--line2);border-radius:var(--r);color:var(--fg);font-family:var(--ui);font-size:var(--sm);padding:10px 12px;resize:vertical}
+.say input[type=email]:focus,.say textarea:focus{outline:none;border-color:var(--acc-line)}
+.say input[type=email]::placeholder,.say textarea::placeholder{color:var(--fg3)}
+.say input[name=_gotcha]{position:absolute;left:-9999px;width:1px;height:1px;opacity:0}
+.say-act{display:flex;align-items:center;gap:15px;margin-top:15px;flex-wrap:wrap}
+.say-act .btn{cursor:pointer;border:0;font-family:inherit}
+.say-act .btn:hover{filter:brightness(1.08)}
+.say-act .btn[disabled]{opacity:.55;cursor:default;filter:none}
+.say-msg{font-family:var(--mono);font-size:var(--xs);color:var(--fg3);margin:0}
+.say-msg.ok{color:var(--data)}
+.say-msg.bad{color:var(--warn)}
+
 /* --- footer --- */
 footer{border-top:1px solid var(--line);background:var(--ink2);margin-top:56px}
 footer .in{max-width:var(--wrap);margin:0 auto;padding:26px 22px;display:flex;flex-wrap:wrap;gap:16px;justify-content:space-between;align-items:center;font-size:var(--xs);color:var(--fg3)}
@@ -170,5 +205,15 @@ footer .links{display:flex;flex-wrap:wrap;gap:20px}
 .stamp{font-family:var(--mono);color:var(--fg3)}
 .attrib{max-width:var(--wrap);margin:0 auto;padding:0 22px 26px;font-size:var(--xs);color:var(--fg3);line-height:1.6}
 
+/* SHELL.md r5's `.top` stacking fix, at THIS surface's own breakpoint (r6:
+   the value belongs to the site, not to the shell). MEASURED, not copied:
+   with five nav items the nav wraps to two rows at 555 px and is a single row
+   from 560. r5's 430 px would have left the defect live across a 125 px band —
+   the logo vertically centred between two rows of nav, which is what it looked
+   like at 390 before this. Screenshot 2026-08-17. */
+@media(max-width:559px){
+  .top{flex-direction:column;align-items:flex-start;gap:11px}
+  .top nav{width:100%}
+}
 @media(max-width:640px){.status>div{grid-template-columns:1fr;gap:6px}}
 @media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}*,*::before,*::after{animation-duration:.01ms!important;transition-duration:.01ms!important}}

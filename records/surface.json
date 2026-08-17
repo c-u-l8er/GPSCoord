@@ -16,7 +16,9 @@
 
   "surface_rung": "live_local",
   "surface_rung_covers": "the converter at /convert/ — and nothing else on this domain",
-  "verified_at": "2026-08-16",
+  "verified_at": "2026-08-17",
+  "shell_revision": "shell-r9",
+  "_shell_revision_comment": "SHELL.md r5 asks every surface to record the revision it was built against. The document's own header still reads 'REVISION shell-r5' while its table runs to r9 — the header string is stale, so this records the newest ROW applied, not the header. This surface carries r6 (both gate holes), r7 (the header CTA), r8 (comment-stripped text extraction and a cascade resolved over the artifact) and r9 (the Formspree contact form).",
 
   "status": {
     "statement": "The converter and the distance tool run end to end in a browser on a developer machine. Nothing else on this domain is implemented.",
@@ -117,9 +119,10 @@
   },
 
   "contact": {
-    "kind": "github_issues",
+    "kind": "form",
+    "form_endpoint": "https://formspree.io/f/xaewoadr",
     "url": "https://github.com/c-u-l8er/GPSCoord/issues",
-    "_comment": "Deliberately NOT a mailto: and deliberately NOT toolboxhvac's Formspree endpoint. If GPSCoord ever needs a non-GitHub correction channel it must have its own endpoint, or an explicit ruling to share one. Flagged [TRAVIS]."
+    "_comment": "SHELL.md r9, ruled by Travis 2026-08-17. The [TRAVIS] item this record carried since 2026-08-16 — 'GPSCoord has no Formspree endpoint of its own, so corrections point at GitHub issues' — is ANSWERED: use the same endpoint computedriven.com uses. The form is now the primary correction channel; the issues URL above stays as the second route, which is why both fields are here. Still never a mailto: (Travis, 2026-08-11) and the gate still refuses one."
   },
 
   "gates": {

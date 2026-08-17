@@ -14,8 +14,43 @@
    Output goes to the repository root, because that is what the domain serves
    today. Do not change that without confirming the Pages output directory.
    ========================================================================== */
-import { readFileSync, writeFileSync, mkdirSync } from "fs";
+import { readFileSync, writeFileSync, mkdirSync, readdirSync } from "fs";
+import { createHash } from "crypto";
 import * as C from "./src/coord.mjs";
+
+/* ==========================================================================
+   PROVENANCE — SHELL.md r6, hole 2. THIS RUNS BEFORE ANYTHING ELSE.
+
+   Nothing used to prove the artifact on disk came from the build the gate was
+   gating. If this file threw — a record that disagrees with the arithmetic is
+   exactly what it is *supposed* to throw on — the previous index.html was
+   still sitting there, and launch-gate.mjs read it, found it consistent with
+   itself, and approved it. The gate would report a clean publication of a page
+   nobody had just built.
+
+   Two halves, and neither works alone:
+
+   1. INVALIDATE FIRST. The manifest is marked "building" before a single
+      record is read. Any throw, anywhere, leaves it that way and the gate
+      refuses outright. This is what makes a THROWN build unpublishable
+      rather than merely unlucky.
+   2. HASH BOTH SIDES, LAST. Outputs prove the artifact is byte-for-byte what
+      this run emitted (a hand-edit after a good build is caught). Inputs
+      prove the sources have not moved since (a build that threw hours ago,
+      or a record edited without rebuilding, is caught). Hashing outputs
+      alone would not catch the second: a build that throws before its first
+      write leaves old artifacts matching an old manifest perfectly.
+   ========================================================================== */
+const MANIFEST = "./records/build-manifest.json";
+const sha256 = (p) => createHash("sha256").update(readFileSync(p)).digest("hex");
+writeFileSync(
+    MANIFEST,
+    JSON.stringify({
+        status: "building",
+        note: "This build did not finish. Any artifact on disk predates it. launch-gate.mjs refuses while this file says so.",
+        started_at: new Date().toISOString(),
+    }, null, 2) + "\n",
+);
 
 const read = (p) => readFileSync(p, "utf8");
 const J = (p) => JSON.parse(read(p));
@@ -269,14 +304,44 @@ const CSS = read("./src/shell.css")
    and compare against the page. Comments and indentation are stripped, and
    NEWLINES ARE KEPT — joining JavaScript lines the way the CSS is joined would
    be a semicolon-insertion bug waiting to happen. */
-const GLOBE = read("./src/globe.js")
+const dense = (js) => js
     .replace(/\/\*[\s\S]*?\*\//g, "")
     .replace(/^[ \t]*\/\/.*$/gm, "")
     .replace(/^[ \t]+/gm, "")
     .replace(/[ \t]+$/gm, "")
     .replace(/\n{2,}/g, "\n")
     .trim();
+const GLOBE = dense(read("./src/globe.js"));
+/* Emitted as its own file for the same reason globe.js is: the landing page's
+   markup stays content-only, so "the content is complete with JavaScript off"
+   stays a thing a reader can check by deleting two lines. The FORM does not
+   depend on this file — it carries action and method — so deleting it costs
+   the inline reply and nothing else. */
+const CONTACT_JS = dense(read("./src/contact.js"));
 const YEAR = new Date(surface.verified_at).getUTCFullYear();
+
+/* ---------- the correction channel (SHELL.md r9) ----------
+   Ruled by Travis 2026-08-17: the ComputeDriven Formspree endpoint. The
+   endpoint is declared ONCE, in the frozen record, so no page can invent its
+   own — the same discipline toolboxhvac uses. A real <form action method>,
+   because it has to work with scripting off like the rest of this page. */
+function contactForm() {
+    const c = surface.contact;
+    if (c.kind !== "form" || !/^https:\/\/formspree\.io\/f\/\w+$/.test(c.form_endpoint))
+        throw new Error(`contact record is not a form endpoint: ${JSON.stringify(c)}`);
+    return `<div class="eyebrow">Tell us this page is wrong</div>
+<h2>A number here with no witness is a defect, and we would rather hear it than ship it.</h2>
+<p class="lede">This site has already published a fabricated coordinate and had to retract it above. The most useful thing anyone can send is an input and the value they expected. It goes straight to a person; there is no mailing list, and nothing here is stored on this domain.</p>
+<form class="say" action="${esc(c.form_endpoint)}" method="POST" novalidate>
+<div class="say-row">
+<label class="say-f"><span>Your email</span><input type="email" name="email" autocomplete="email" placeholder="so a reply can reach you" required></label>
+<label class="say-f"><span>Message</span><textarea name="message" rows="3" placeholder="a question, a correction, a number of ours you think is wrong" required></textarea></label>
+</div>
+<input type="text" name="_gotcha" tabindex="-1" autocomplete="off" aria-hidden="true">
+<div class="say-act"><button type="submit" class="btn">Send</button><p class="say-msg" role="status" aria-live="polite"></p></div>
+</form>
+<p class="lede sm">It posts to <code>formspree.io</code> when <b>you</b> press the button, carrying what you typed and nothing else. If you would rather leave a public trace, <a href="${esc(c.url)}">the issue tracker</a> is the other route and it works just as well.</p>`;
+}
 
 const COMMON = {
     CSS,
@@ -300,6 +365,7 @@ const landing = fill(read("./src/landing.html"), {
     ZEROS: zeros(),
     RETRACTION,
     PRICING: pricing(),
+    CONTACT_FORM: contactForm(),
     CTA:
         cta("live_local", "run and checked", [
             { verb: "Use it", href: APP_PATH, what: "The converter is one click away and it works. No account, no key, and no request leaves your browser." },
@@ -354,9 +420,37 @@ function fill(tpl, vars) {
 
 writeFileSync("./index.html", landing);
 writeFileSync("./globe.js", GLOBE + "\n");
+writeFileSync("./contact.js", CONTACT_JS + "\n");
 mkdirSync("./convert", { recursive: true });
 writeFileSync("./convert/index.html", app);
 
 console.log(`wrote index.html          ${landing.length.toLocaleString()} bytes`);
 console.log(`wrote globe.js            ${GLOBE.length.toLocaleString()} bytes  (decoration; the page's content does not depend on it)`);
+console.log(`wrote contact.js          ${CONTACT_JS.length.toLocaleString()} bytes  (upgrade only; the form posts without it)`);
 console.log(`wrote convert/index.html  ${app.length.toLocaleString()} bytes`);
+
+/* ---------- the manifest, written LAST and only on success ----------
+   The input list is ENUMERATED, not typed: a new file under src/ or records/
+   joins it automatically. A hand-written list is how a source quietly stops
+   being covered, which is the same shape of defect one level up. */
+const OUTPUTS = ["./index.html", "./globe.js", "./contact.js", "./convert/index.html"];
+const INPUTS = [
+    "./build-site.mjs",
+    "./package.json",
+    ...readdirSync("./src").sort().map((f) => "./src/" + f),
+    ...readdirSync("./records").sort()
+        .filter((f) => f.endsWith(".json") && "./records/" + f !== MANIFEST)
+        .map((f) => "./records/" + f),
+];
+writeFileSync(
+    MANIFEST,
+    JSON.stringify({
+        status: "complete",
+        note: "Written last, only on success. launch-gate.mjs recomputes every hash below and refuses on any mismatch — an artifact this build did not emit, or a source that has moved since it did.",
+        built_at: new Date().toISOString(),
+        version: pkg.version,
+        outputs: Object.fromEntries(OUTPUTS.map((p) => [p, sha256(p)])),
+        inputs: Object.fromEntries(INPUTS.map((p) => [p, sha256(p)])),
+    }, null, 2) + "\n",
+);
+console.log(`wrote ${MANIFEST}  ${INPUTS.length} inputs + ${OUTPUTS.length} outputs hashed`);
