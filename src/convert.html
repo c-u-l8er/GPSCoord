@@ -6,6 +6,19 @@
 <meta name="theme-color" content="#07090e">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,300..700&family=Instrument+Serif:ital@0;1&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+
+<!-- The shared portfolio nav, and the deal it is held to: <amp-nav> is CHROME.
+     Every other script here is already proved inert. This one is not inert, it
+     renders a bar — so the rule it has to satisfy instead is that NO CONTENT
+     depends on it. With scripting off it renders nothing and the page loses a
+     way to reach sibling domains; it does not lose a rung chip, a status row,
+     an evidence figure or a reference row.
+     Vendored from ampersand-nav/src via sync-nav.sh and COPIED by the build, so
+     the manifest hashes vendor/amp-nav.js and ./amp-nav.js separately and the
+     gate refuses if they differ - hand-editing the vendored copy is not a rule
+     here, it is a build failure. This revision has no renderPlacement(), so the
+     bar renders without a placement strip until lane N syncs. -->
+<script type="module" src="/amp-nav.js"></script>
 <style>{{CSS}}
 /* --- app-only --- */
 .tool{background:var(--ink2);border:1px solid var(--line);border-radius:var(--rl);overflow:hidden;margin-top:26px}
@@ -46,6 +59,7 @@ figcaption{font-size:var(--xs);color:var(--fg3);margin-top:12px;line-height:1.5}
 @media(max-width:640px){.out{grid-template-columns:1fr;gap:6px}.out .cp{justify-self:start}}
 </style></head><body>
 {{BAND}}
+{{NAV}}
 <div class="wrap">
 
 <div class="top"><a class="logo" href="/">gps<span>coord</span></a>

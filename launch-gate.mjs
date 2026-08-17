@@ -112,24 +112,88 @@ T("the application links back to the question", app.includes('href="/"'));
 
 /* The landing page's CONTENT ships without JavaScript. SHELL.md §8 requires an
    identifying animation and the animation may cost JS; the page's meaning may
-   not. So: nothing inline, exactly one external script, and that script is the
-   animation — which §12 below then proves writes nothing into the document. */
+   not.
+
+   NARROWED 2026-08-17, DELIBERATELY, AND NOT DELETED. This check used to name
+   two scripts and require a literal `defer` on both. Travis then ruled the
+   shared <amp-nav> onto every website including the tier-4 surfaces, and the
+   nav is a third script that carries `type="module"` rather than `defer`.
+
+   The rule was never "zero JS" — this page has shipped two scripts all along.
+   It is "NO JS THE CONTENT DEPENDS ON", and that is what stays enforced: the
+   text floor and the rung/status/evidence checks below all read the page with
+   script stripped, so anything load-bearing that hides in a script fails
+   there before it reaches here. What this check enforces is the narrower
+   promise that the SET is enumerated and each member is accounted for.
+
+   Widening it by one is how a check like this dies, so each addition is named
+   with the reason it is allowed to exist:
+     /amp-nav.js   chrome. Ruled onto every site. Removing it costs a way to
+                   reach sibling domains and no content whatsoever.
+     /globe.js     decoration. §12 below proves it writes nothing into the doc.
+     /contact.js   an upgrade. The form carries action and method, so it posts
+                   without it; the check next door is what proves that. */
 {
     const tags = [...landing.matchAll(/<script\b([^>]*)>([\s\S]*?)<\/script>/gi)];
     T("the landing page ships no inline JavaScript", tags.every((t) => t[2].trim() === ""));
-    /* Two, and both named: the identity animation and the contact upgrade.
-       Enumerated rather than counted, because "exactly N scripts" is a check
-       that gets relaxed by one every time somebody adds a script. */
-    const WANT_SCRIPTS = ["/globe.js", "/contact.js"];
+    const WANT_SCRIPTS = ["/amp-nav.js", "/globe.js", "/contact.js"];
     const srcs = tags.map((t) => (t[1].match(/\bsrc="([^"]*)"/) || [])[1]);
-    T("the landing page loads exactly the two scripts it declares, both deferred",
+    /* `type="module"` IS deferred — the spec defers module scripts by
+       definition — so requiring the literal attribute would reject a script
+       that is already doing the thing the attribute asks for. Either is
+       accepted; a bare synchronous script still is not. */
+    const deferred = (attrs) => /\bdefer\b/.test(attrs) || /\btype="module"/.test(attrs);
+    T("the landing page loads exactly the three scripts it declares, none of them synchronous",
         srcs.length === WANT_SCRIPTS.length &&
         WANT_SCRIPTS.every((w, i) => srcs[i] === w) &&
-        tags.every((t) => /\bdefer\b/.test(t[1])),
+        tags.every((t) => deferred(t[1])),
         srcs.join(", ") || "none");
-    /* Neither may be load-bearing for the page's meaning. globe.js is proved
-       inert below; contact.js is proved inert by the form working without it,
-       which is what the action/method check next door is for. */
+}
+
+/* ---------- 3a. the shared nav is on BOTH routes, as an element ----------
+   Travis, 2026-08-17: "the ampersand-nav needs to be on each website!" and,
+   asked about the tier-4 surfaces specifically, "yes add the nav to those
+   too."
+
+   GATED BECAUSE IT VANISHED SILENTLY FROM SEVEN SURFACES. That is the failure
+   mode worth checking for: nothing breaks, no page errors, the site just
+   quietly stops being part of the portfolio.
+
+   SCOPED TO THE ELEMENT (r14). A <script src> naming the file is not the nav —
+   it is a file that might define one — and neither is the word "amp-nav" in a
+   comment, of which both templates carry one. Comments and script/style
+   bodies come out before this counts, and it counts ELEMENTS. A naive
+   grep -c '<amp-nav' over the emitted landing page returns 3; exactly one of
+   those is an element, and that difference is the whole point of the rule.
+
+   BOTH ROUTES, because "/ has the nav" was never the claim — a converter you
+   can reach and then cannot navigate away from is the same defect on the page
+   people actually use. */
+{
+    const elements = (h) =>
+        [...h.replace(/<!--[\s\S]*?-->/g, " ")
+             .replace(/<script\b[^>]*>[\s\S]*?<\/script\s*>/gi, " ")
+             .replace(/<style\b[^>]*>[\s\S]*?<\/style\s*>/gi, " ")
+             .matchAll(/<amp-nav\b[^>]*>/gi)].map((m) => m[0]);
+    for (const [name, h] of [["/", landing], [APP, app]]) {
+        const els = elements(h);
+        T(`${name} carries exactly one <amp-nav> element`, els.length === 1,
+            `${els.length} element(s), ${(h.match(/<amp-nav\b/gi) || []).length} raw text occurrence(s)`);
+        T(`${name} loads amp-nav.js as a module`,
+            /<script\b[^>]*\btype="module"[^>]*\bsrc="\/amp-nav\.js"/.test(h));
+    }
+    /* The vendored file is not ours to edit, and "please don't" is not a
+       check. The build COPIES vendor/amp-nav.js to ./amp-nav.js, so the two
+       must be byte-identical; if they are not, somebody hand-edited the
+       served copy and the next sync-nav.sh run will silently revert it. */
+    const vend = readFileSync("./vendor/amp-nav.js");
+    const served = readFileSync("./amp-nav.js");
+    T("the served amp-nav.js is byte-identical to the vendored copy",
+        vend.equals(served), `vendor ${vend.length} B / served ${served.length} B`);
+    /* Buffer.byteLength, not String.length: r15. The two differ on any
+       non-ASCII byte, and a §0.1 deploy check compares against curl. */
+    T("the vendored nav is the deployed 51,428-byte revision",
+        Buffer.byteLength(vend) === 51428, `${Buffer.byteLength(vend)} bytes`);
 }
 
 /* ---------- 3b. the UI may only call arithmetic that exists ----------
@@ -236,6 +300,62 @@ const occurrences = (h, s) => h.split(s).length - 1;
     T("the landing page still carries its retraction",
         (landing.match(RETRACT_RE) || []).length === 1 && /Retraction (&mdash;|—)/.test(landing),
         `${(landing.match(RETRACT_RE) || []).length} retraction block(s)`);
+
+    /* ---- r15: THE BLOCKLIST RUNS OVER EVERY FILE THE BUILD PUBLISHES ----
+       Everything above reads the two HTML pages. This deploy also serves
+       three JavaScript files, and a sibling surface shipped a retracted claim
+       inside exactly that — a published script its gate never opened, with
+       three of its four downloadable files exempt. "200K+" or "Enterprise-
+       grade" sitting in a string literal is served, indexed and quotable; it
+       does not become acceptable by being in a .js.
+
+       The list is the manifest's OUTPUTS, not a list typed here, so a file
+       this build starts emitting tomorrow is covered the day it appears —
+       the same reason build-site.mjs enumerates its inputs from the
+       directory rather than naming them. No occurrence is allowed at all:
+       the retraction block lives in the HTML, so an asset has no zone in
+       which naming a retracted claim would be honest. */
+    const outs = (() => { try { return J("./records/build-manifest.json").outputs || {}; }
+                          catch { return {}; } })();
+    const assets = Object.keys(outs).filter((p) => !/\.html?$/i.test(p));
+    /* If the manifest has no assets the scan would pass by having nothing to
+       do, which is the vacuous pass r12 warns about. */
+    T("the manifest names the published assets this scan reads", assets.length > 0,
+        `${assets.length} asset(s)`);
+    let assetHits = 0;
+    for (const p of assets) {
+        const body = read(p);
+        for (const s of RETRACTED) {
+            const n = occurrences(body, s);
+            if (!n) continue;
+            assetHits++;
+            T(`${p} does not reinstate "${s}"`, false, `${n} occurrence(s) in a published asset`);
+        }
+    }
+    T(`every published non-HTML asset is clear of all ${RETRACTED.length} retracted claims (r15)`,
+        assetHits === 0, assets.join(", ") || "no assets");
+
+    /* ---- and the deploy tree is bigger than the build's outputs ----
+       The scan above covers what the build EMITS. Cloudflare Pages serves the
+       repository root, which also contains the archive and the tools — and
+       launch-gate.mjs and break-harness.mjs both name every string in
+       RETRACTED, because that is what they are made of. Until 2026-08-17 this
+       repo had no _redirects at all and every one of them was reachable.
+
+       This does not re-scan them; it requires them to be CLOSED, which is the
+       only exemption r10 permits — the file the host obeys rather than a list
+       written for the gate. */
+    const redirects = (() => { try { return read("./_redirects"); } catch { return ""; } })();
+    /* Match the redirect LINE, not the substring: "/check.mjs" appears inside
+       other paths and a bare .includes() would pass on a rule about something
+       else. The only metacharacter a Pages path uses is *, so escape the rest
+       and let * mean "anything". */
+    const closed = (p) => {
+        const rx = p.split("*").map((s) => s.replace(/[.+?^${}()|[\]\\]/g, "\\$&")).join("[^\\s]*");
+        return new RegExp("^" + rx + "\\s+\\S+\\s+30[12]\\s*$", "m").test(redirects);
+    };
+    for (const p of ["/old_scrap/*", "/build-site.mjs", "/launch-gate.mjs", "/check.mjs", "/break-harness.mjs"])
+        T(`${p} is closed in _redirects, so the host does not serve it`, closed(p));
 }
 
 /* ---------- 5. no dead mailbox anywhere ---------- */

@@ -1,0 +1,30 @@
+# Cloudflare Pages redirects.
+#
+# THIS FILE DID NOT EXIST UNTIL 2026-08-17, and the deploy root is the
+# repository root, so everything below was being served.
+#
+# old_scrap/ holds previous revisions of this site — old_scrap/v2/index.html
+# and old_scrap/v1/src/app.html. They stay in the repository because deleting
+# the thing you replaced is how a correction stops being checkable, but a
+# stale artifact served beside an approved one is a stale artifact served.
+# This is wrand.cc's SHELL.md r6 hole 2, which that surface found and closed
+# on 2026-08-17: THE GATE READS THE FILES IT KNOWS ABOUT AND THE HOST SERVES A
+# DIRECTORY. launch-gate.mjs here reads index.html and convert/index.html; it
+# has never opened these.
+#
+# The tools are the second half. build-site.mjs, launch-gate.mjs, check.mjs
+# and break-harness.mjs are not the site, and two of them NAME EVERY RETRACTED
+# CLAIM — a blocklist and a break harness are made of them. Serving them
+# republishes, in a .js the crawler will happily read, the exact strings the
+# retraction above the fold says this site has withdrawn.
+#
+# Closing them here rather than exempting them inside the gate is deliberate.
+# r10: an exemption written by the same hand as the page is not a check. This
+# is the file the host obeys, so the only way to be exempt from a published-
+# file scan is to genuinely stop being published.
+/old_scrap/*        /  301
+/build-site.mjs     /  301
+/launch-gate.mjs    /  301
+/check.mjs          /  301
+/break-harness.mjs  /  301
+/vendor/*           /  301

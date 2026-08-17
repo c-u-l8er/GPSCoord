@@ -130,11 +130,18 @@ function rung(value) {
 
 /* The band states where you are. What it may state depends on the TIER, and
    the tier is a record, not a choice made here: amp-nav files gpscoord as
-   place:4, "Outside — nav removed". A tier-4 surface may attribute itself to
-   the parent but may NOT claim to be a layer of it — claiming membership in a
-   portfolio whose own nav excludes you is a false claim, and this page carried
-   one. The rung chip and the covers span stay at every tier: they are honesty
-   machinery, not branding. SHELL.md §1. */
+   place:4, "Outside — nav removed".
+
+   THE "NAV REMOVED" HALF OF THAT IS SUPERSEDED (Travis, 2026-08-17: "yes add
+   the nav to those too"), and nav() below emits it. THE BAND IS NOT, and the
+   reason the earlier justification does not survive the ruling is worth
+   keeping straight: it used to say a tier-4 surface may not claim membership
+   in a portfolio "whose own nav excludes you", and the nav no longer excludes
+   this domain. The band still claims no layer anyway, on the narrower and
+   sturdier ground — carrying the shared nav says these domains are related;
+   "the X layer of ComputeDriven" asserts a position in a hierarchy, and this
+   surface does not occupy one. The rung chip and the covers span stay at
+   every tier: they are honesty machinery, not branding. SHELL.md §1. */
 function band() {
     if (![4, 3, 2, 1].includes(surface.tier)) {
         throw new Error(`BUILD REFUSED — records/surface.json declares no tier, so the band cannot know what it may claim.`);
@@ -343,9 +350,27 @@ function contactForm() {
 <p class="lede sm">It posts to <code>formspree.io</code> when <b>you</b> press the button, carrying what you typed and nothing else. If you would rather leave a public trace, <a href="${esc(c.url)}">the issue tracker</a> is the other route and it works just as well.</p>`;
 }
 
+/* ---------- the shared portfolio nav (Travis, 2026-08-17) ----------
+   "the ampersand-nav needs to be on each website!" — and, asked whether the
+   two tier-4 surfaces were exempt, "yes add the nav to those too". The
+   2026-08-16 "band without nav" ruling is superseded in its "no nav" half
+   only; band() above is untouched and still claims no layer.
+
+   No `property` attribute: gpscoord has no entry in the vendored file's
+   PROPERTY_MAP, and inventing one would put a "you are here" highlight on a
+   property the portfolio does not list. The component documents omission as
+   supported and renders the bar alone.
+
+   Emitted through a token rather than typed into both templates, so the two
+   routes cannot drift apart — which is the same reason BAND is a token. */
+function nav() {
+    return `<amp-nav></amp-nav>`;
+}
+
 const COMMON = {
     CSS,
     BAND: band(),
+    NAV: nav(),
     STAMP,
     APP_PATH,
     ORIGIN: surface.origin,
@@ -423,21 +448,30 @@ writeFileSync("./globe.js", GLOBE + "\n");
 writeFileSync("./contact.js", CONTACT_JS + "\n");
 mkdirSync("./convert", { recursive: true });
 writeFileSync("./convert/index.html", app);
+/* COPIED BYTE-FOR-BYTE, never transformed. vendor/amp-nav.js is the deployed
+   51,428-byte revision of a file this repo does not own; `dense()` is applied
+   to globe.js and contact.js because those are ours to reformat, and applying
+   it here would silently fork a vendored artifact from its upstream. The
+   manifest hashes the vendored input and the emitted output separately, so
+   the gate can prove the served file is the file that was synced. */
+writeFileSync("./amp-nav.js", readFileSync("./vendor/amp-nav.js"));
 
 console.log(`wrote index.html          ${landing.length.toLocaleString()} bytes`);
 console.log(`wrote globe.js            ${GLOBE.length.toLocaleString()} bytes  (decoration; the page's content does not depend on it)`);
 console.log(`wrote contact.js          ${CONTACT_JS.length.toLocaleString()} bytes  (upgrade only; the form posts without it)`);
 console.log(`wrote convert/index.html  ${app.length.toLocaleString()} bytes`);
+console.log(`wrote amp-nav.js          ${readFileSync("./vendor/amp-nav.js").length.toLocaleString()} bytes  (vendored, copied unchanged; chrome only)`);
 
 /* ---------- the manifest, written LAST and only on success ----------
    The input list is ENUMERATED, not typed: a new file under src/ or records/
    joins it automatically. A hand-written list is how a source quietly stops
    being covered, which is the same shape of defect one level up. */
-const OUTPUTS = ["./index.html", "./globe.js", "./contact.js", "./convert/index.html"];
+const OUTPUTS = ["./index.html", "./globe.js", "./contact.js", "./convert/index.html", "./amp-nav.js"];
 const INPUTS = [
     "./build-site.mjs",
     "./package.json",
     ...readdirSync("./src").sort().map((f) => "./src/" + f),
+    ...readdirSync("./vendor").sort().map((f) => "./vendor/" + f),
     ...readdirSync("./records").sort()
         .filter((f) => f.endsWith(".json") && "./records/" + f !== MANIFEST)
         .map((f) => "./records/" + f),

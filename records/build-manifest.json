@@ -1,24 +1,26 @@
 {
   "status": "complete",
   "note": "Written last, only on success. launch-gate.mjs recomputes every hash below and refuses on any mismatch — an artifact this build did not emit, or a source that has moved since it did.",
-  "built_at": "2026-08-17T17:29:23.415Z",
+  "built_at": "2026-08-17T18:26:58.445Z",
   "version": "0.2.0",
   "outputs": {
-    "./index.html": "7b40da9ab2b63f72fdf0d2c0a57802f26231dbabdbeb5c166299696a63a9c501",
+    "./index.html": "147b5c376d9208d3d0c59dc982630dec5e92e0ce22839a3992d7b7b1f772edc3",
     "./globe.js": "59571fc94828e8485371c63b178054e7da38a229ee5039b2fb6bbe6f93dfd83b",
     "./contact.js": "e3b8543f0df06559cd224786abdf05d9e7ade1973b00528bed79d5e48dcea60d",
-    "./convert/index.html": "fd6d301472fae5c9cd81f5663b372d436a5fa5df044b59f31a860576d9d63e70"
+    "./convert/index.html": "bdd61329f88e86f3fca1e65492362db984fd88b285f45b6817cef061cfc76ce2",
+    "./amp-nav.js": "ba1eb539ebe6951df41488f5805113c824e4ef565b23612c9cd3f2e1f1f5d4b9"
   },
   "inputs": {
-    "./build-site.mjs": "e2c86289a6fd7d5a09472f3a7cbc14053b20aa2576b92de790b76842d282b755",
+    "./build-site.mjs": "53f376a235e1f769cad2e338c871a279f3cd82fa8cd371ea8768c5963016bd46",
     "./package.json": "74077ef8c766ee8c4e9dff6289c943d0a3d719646e231ea99e2a0e3a9027510a",
     "./src/app.js": "ad0b8be7d227aee8e9f31622cb194a3979d853a6f71e02eb5a6565eaa58664b4",
     "./src/contact.js": "a9f7c77cf6ed7461e0186d9c6ecc69ef7a8650d98c2ece90595c6ee54ed98d63",
-    "./src/convert.html": "ed697f3d149d0c94317b5f371dec2b6646e3eb87fcd5e7d610e94e733d380ed0",
+    "./src/convert.html": "2a8ab065dcb9c353b742d64670f4347c19f598628f8df833e99461b7b146f2c6",
     "./src/coord.mjs": "fb0c8ce6b6b525dd36d41666671417452d2dea82cd8476661d64214dba3e47e4",
     "./src/globe.js": "179be4212312f5f404e39e59e878804da31f8eaf2bbf0ea4db672bf931c73f7f",
-    "./src/landing.html": "5c7d99ef0854f993a3b132248a90e23c5f7097e33c2e92476c4866121692a1df",
+    "./src/landing.html": "91f38308ca737b87672d6bfb3c89f832859c386f386b1f3dda9d7eef8dbcc522",
     "./src/shell.css": "af45ee9edd9776991eb6a4be1b135409d8ea23160173eb5055db379022cb34f3",
+    "./vendor/amp-nav.js": "ba1eb539ebe6951df41488f5805113c824e4ef565b23612c9cd3f2e1f1f5d4b9",
     "./records/reference-pairs.json": "0a5a12c0b80d34043b3e52c89c1fdc330afa3f8c8a3b173a0a4efff13b07b088",
     "./records/reference-points.json": "5fba0006471d50f880fa3b14abc7ce9a0e8ae68664965893ffb767ebbcd4c6d2",
     "./records/surface.json": "f5757cd6622c99f5958d8555b3e8a01a73312b570e6de3ce2da40195f1322d17",
