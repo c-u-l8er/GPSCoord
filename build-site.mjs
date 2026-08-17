@@ -449,7 +449,7 @@ writeFileSync("./contact.js", CONTACT_JS + "\n");
 mkdirSync("./convert", { recursive: true });
 writeFileSync("./convert/index.html", app);
 /* COPIED BYTE-FOR-BYTE, never transformed. vendor/amp-nav.js is the deployed
-   51,428-byte revision of a file this repo does not own; `dense()` is applied
+   52,272-byte revision of a file this repo does not own; `dense()` is applied
    to globe.js and contact.js because those are ours to reformat, and applying
    it here would silently fork a vendored artifact from its upstream. The
    manifest hashes the vendored input and the emitted output separately, so
