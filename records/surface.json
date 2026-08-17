@@ -17,8 +17,8 @@
   "surface_rung": "live_local",
   "surface_rung_covers": "the converter at /convert/ — and nothing else on this domain",
   "verified_at": "2026-08-17",
-  "shell_revision": "shell-r9",
-  "_shell_revision_comment": "SHELL.md r5 asks every surface to record the revision it was built against. The document's own header still reads 'REVISION shell-r5' while its table runs to r9 — the header string is stale, so this records the newest ROW applied, not the header. This surface carries r6 (both gate holes), r7 (the header CTA), r8 (comment-stripped text extraction and a cascade resolved over the artifact) and r9 (the Formspree contact form).",
+  "shell_revision": "shell-r10",
+  "_shell_revision_comment": "SHELL.md r5 asks every surface to record the revision it was built against. The document's own header still reads 'REVISION shell-r5' while its table runs to r9 — the header string is stale, so this records the newest ROW applied, not the header. This surface carries r6 (both gate holes), r7 (the header CTA), r8 (comment-stripped text extraction and a cascade resolved over the artifact) r9 (the Formspree contact form) and r10 (the retraction bound written as two numbers, not an equality, plus hidden occurrences refused outright).",
 
   "status": {
     "statement": "The converter and the distance tool run end to end in a browser on a developer machine. Nothing else on this domain is implemented.",

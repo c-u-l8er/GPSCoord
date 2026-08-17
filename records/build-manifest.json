@@ -1,7 +1,7 @@
 {
   "status": "complete",
   "note": "Written last, only on success. launch-gate.mjs recomputes every hash below and refuses on any mismatch — an artifact this build did not emit, or a source that has moved since it did.",
-  "built_at": "2026-08-17T16:48:06.319Z",
+  "built_at": "2026-08-17T17:29:23.415Z",
   "version": "0.2.0",
   "outputs": {
     "./index.html": "7b40da9ab2b63f72fdf0d2c0a57802f26231dbabdbeb5c166299696a63a9c501",
@@ -21,7 +21,7 @@
     "./src/shell.css": "af45ee9edd9776991eb6a4be1b135409d8ea23160173eb5055db379022cb34f3",
     "./records/reference-pairs.json": "0a5a12c0b80d34043b3e52c89c1fdc330afa3f8c8a3b173a0a4efff13b07b088",
     "./records/reference-points.json": "5fba0006471d50f880fa3b14abc7ce9a0e8ae68664965893ffb767ebbcd4c6d2",
-    "./records/surface.json": "3a6c225a72631ec8225fd552aac843a85cd4fed0ef7e95c9b315d5b740dc2f6d",
+    "./records/surface.json": "f5757cd6622c99f5958d8555b3e8a01a73312b570e6de3ce2da40195f1322d17",
     "./records/verification.json": "0956006fdeac663b2676350a4300a641e78ad4aca73d1012b219799493fb7970"
   }
 }

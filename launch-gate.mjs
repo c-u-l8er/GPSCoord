@@ -164,7 +164,21 @@ T("the application links back to the question", app.includes('href="/"'));
    of them there. Naming a wrong value once is what a retraction is; naming it
    twice is prose, and prose is where a claim hides. A second legitimate
    mention is then a deliberate edit to the number below, reviewed, rather
-   than an accident nothing notices. */
+   than an accident nothing notices.
+
+   SHELL.md r10 — AND THE BOUND IS A NUMBER, NOT AN EQUALITY. The obvious
+   repair for the above is `onPage === inRetraction`, and it is still
+   defective: the retraction is authored content, so writing the retracted
+   sentence three more times INSIDE it keeps both sides equal and puts the
+   claim on the artifact four times. A sibling lane made exactly that print
+   `114 passed, 0 refused`. A check whose two sides are both under the
+   author's control is not a check. Hence `outside === 0 && inside <= cap`,
+   two numbers, neither of them the other.
+
+   And a HIDDEN occurrence is refused outright: a blocklisted string in the
+   file but not in the visible text — an attribute, a comment, a meta tag —
+   is a claim a crawler reads and a person cannot see, which is worse than
+   one printed honestly. */
 const RETRACTED = [
     "200K+", "Active Pathfinders", "Pathfinders",
     "<50ms", "195 Countries", "195 countries",
@@ -185,14 +199,36 @@ const occurrences = (h, s) => h.split(s).length - 1;
         for (const b of blocks)
             T(`${path} the retraction block is flat (a nested <div> would truncate the zone)`,
                 !/<div\b/.test(b.slice(b.indexOf(">") + 1)));
+        /* r8 order: comments first, then script/style, then tags. `<[^>]+>`
+           stops at the first `>`, so a comment containing one survives it.
+
+           r12: and SPLIT on tags rather than replacing them with a space.
+           Flattening the document into one blob breaks a multi-word rule in
+           both directions — a phrase spanning a tag boundary can never be
+           found, and two unrelated text nodes joined by a space manufacture a
+           phrase nobody wrote. Two of the strings blocked here have a space
+           in them, so this is not hypothetical for this file. */
+        const nodesOf = (h) => h
+            .replace(/<!--[\s\S]*?-->/g, "")
+            .replace(/<script[\s\S]*?<\/script>|<style[\s\S]*?<\/style>/gi, "")
+            .split(/<[^>]+>/)
+            .map((t) => t.replace(/\s+/g, " ").trim())
+            .filter(Boolean);
+        const textNodes = nodesOf(body);
+        const inText = (needle) =>
+            textNodes.reduce((n, t) => n + (t.split(needle).length - 1), 0);
         for (const s of RETRACTED) {
             const total = occurrences(body, s);
             const inside = occurrences(zone, s);
+            const outside = total - inside;
+            const seen = inText(s);
             const cap = ALLOWED[s] ?? 1;
             T(`${path} does not reinstate "${s}"`,
-                total === inside && inside <= cap,
+                outside === 0 && inside <= cap,
                 total === 0 ? "absent"
-                    : `${total} occurrence(s), ${inside} inside the retraction, cap ${cap}`);
+                    : `${total} occurrence(s), ${outside} outside the retraction (bound 0), ${inside} inside it (bound ${cap})`);
+            T(`${path} hides no occurrence of "${s}"`, total <= seen,
+                total === 0 ? "absent" : `${total} in the file, ${seen} in the visible text`);
         }
     }
     /* A retraction that is deleted un-retracts everything, silently. The
