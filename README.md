@@ -52,6 +52,16 @@ Each of these was tested by deliberately breaking it:
 | Mark a review gate `approved` with no evidence | gate refuses |
 | Let `package.json` and `records/surface.json` disagree on the version | build refuses |
 | Call a `GPS.*` function the arithmetic does not export | gate refuses |
+| Drop the `data-identity-animation` marker | gate refuses |
+| Publish **"12 Routing agents"** — `CARS` in `globe.js` | gate refuses: `LEAKED: "12" — change globe.js, not the page` |
+| Name a frozen record's string inside `globe.js` | gate refuses |
+| Give the animation a wire back into the DOM | gate refuses |
+| Put any inline script on the landing page | gate refuses |
+| Set `--fg3` back to `.34` | gate refuses: `2.78:1` against a 4.5:1 floor |
+| Delete the `.logo:hover` rule | gate refuses |
+| Claim to be a *layer* of the portfolio at tier 4 | gate refuses |
+
+All sixteen confirmed 2026-08-16 by running them.
 
 ## Layout
 
