@@ -8,7 +8,7 @@
 :root{
 --ink:#07090e;--ink2:#0b0f16;--ink3:#111721;
 --line:rgba(255,255,255,.07);--line2:rgba(255,255,255,.14);
---fg:#e9ecf1;--fg2:rgba(233,236,241,.62);--fg3:rgba(233,236,241,.34);
+--fg:#e9ecf1;--fg2:rgba(233,236,241,.62);--fg3:rgba(233,236,241,.55);
 --acc:#ff8a3d;--acc-soft:rgba(255,138,61,.1);--acc-line:rgba(255,138,61,.32);
 --data:#5ad1c8;--data-soft:rgba(90,209,200,.1);--warn:#f5c451;
 --display:"Instrument Serif",Georgia,serif;
@@ -29,11 +29,16 @@ img,canvas,svg{max-width:100%}
 :focus-visible{outline:2px solid var(--acc);outline-offset:2px}
 .wrap{max-width:var(--wrap);margin:0 auto;padding:0 22px}
 
-/* --- placement band: shared, identical on every surface --- */
+/* --- placement band: shared, identical on every surface ---
+   GPSCoord is amp-nav place:4 ("Outside — nav removed"), so the band is the
+   tier-4 variant: attribution, not membership. It does NOT claim a layer, and
+   there is no portfolio nav anywhere on this domain. SHELL.md §1.
+   .covers is 11px and load-bearing — it is the span that keeps the rung chip
+   honest — so it takes --fg2 (6.66:1) rather than --fg3 (5.46:1). SHELL.md §0. */
 .band{display:flex;flex-wrap:wrap;align-items:center;gap:8px 16px;padding:11px 22px;background:var(--ink2);border-bottom:1px solid var(--line);font-size:var(--xs)}
 .band .where{color:var(--fg2);text-transform:uppercase;letter-spacing:.05em}
 .band .where b{color:var(--fg);font-weight:600}
-.band .covers{color:var(--fg3);flex:1 1 300px;min-width:0}
+.band .covers{color:var(--fg2);flex:1 1 300px;min-width:0}
 .rung{display:inline-flex;align-items:center;gap:7px;font-family:var(--mono);font-size:var(--xs);padding:2px 9px;border-radius:999px;border:1px solid var(--line2);color:var(--fg2);white-space:nowrap}
 .rung::before{content:"";width:6px;height:6px;border-radius:50%;background:currentColor}
 .rung[data-rung=spec]{color:#9aa4b2;border-color:rgba(154,164,178,.35)}
@@ -45,14 +50,36 @@ img,canvas,svg{max-width:100%}
 
 /* --- nav --- */
 .top{display:flex;justify-content:space-between;align-items:center;gap:16px;padding:16px 0;border-bottom:1px solid var(--line)}
+/* The logo had no :hover at all, so hovering the top-left of the page changed
+   nothing and there was no way to tell it was a link. Every <a> and <button>
+   on both routes needs a visible :hover; the gate now checks it. */
 .logo{font-family:var(--mono);font-size:var(--md);font-weight:600;letter-spacing:-.03em;color:var(--fg);text-decoration:none;white-space:nowrap}
 .logo span{color:var(--acc)}
+.logo:hover{color:var(--acc)}
 .top nav{display:flex;gap:22px;align-items:center;flex-wrap:wrap}
 .top nav a{color:var(--fg2);text-decoration:none;font-size:var(--sm);font-weight:500;white-space:nowrap}
 .top nav a:hover{color:var(--acc)}
 .btn{display:inline-block;background:var(--acc);color:#180d04;font-weight:700;border-radius:var(--r);padding:11px 20px;text-decoration:none;font-size:var(--sm)}
 .btn.ghost{background:transparent;color:var(--fg);border:1px solid var(--line2);font-weight:500}
 .btn:hover{filter:brightness(1.08)}
+
+/* --- the identifying animation (SHELL.md §8) ---
+   The placement machinery is shared; what gets drawn inside is the site's own.
+   The layer is absolutely positioned, so it cannot move or delay the h1; the
+   section clips it, so it can never widen the document at any viewport; and it
+   is masked rather than hard-edged, so the lede stays readable where they
+   overlap. The text sits above it on z-index and is never behind a gradient. */
+.hero{position:relative;overflow:hidden}
+.hero .front{position:relative;z-index:1}
+.idanim{position:absolute;z-index:0;top:0;bottom:0;right:-40px;left:auto;width:min(44vw,430px);pointer-events:none;
+  -webkit-mask-image:radial-gradient(circle at 56% 50%,#000 44%,transparent 74%);
+  mask-image:radial-gradient(circle at 56% 50%,#000 44%,transparent 74%)}
+.idanim canvas{display:block;width:100%;height:100%}
+@media(min-width:861px){.hero .lede{max-width:50ch}}
+/* Narrow: there is no column to sit beside, so it becomes a texture behind the
+   text. Pulled further off the right edge and quietened, because a bright
+   vehicle landing on a word is the one way this could cost the reader. */
+@media(max-width:860px){.idanim{right:-30%;width:min(86vw,430px);opacity:.26}}
 
 /* --- sections --- */
 section{padding:56px 0;border-top:1px solid var(--line)}

@@ -9,6 +9,9 @@
   "layer": "coordinate",
   "parent": "ComputeDriven",
 
+  "tier": 4,
+  "_tier_comment": "amp-nav (ampersand-nav/src/amp-nav.js) records gpscoord as { place: 4 } — 'Outside, nav removed' — and gpscoord is deliberately absent from sync-nav.sh's target list. A tier-4 surface therefore takes the band but NOT the layer claim: this page previously said 'GPSCoord is the coordinate layer of ComputeDriven', which asserted membership in a portfolio whose own nav excludes it. Attribution, not membership; and no portfolio nav anywhere on this domain. Ruled by Travis 2026-08-16, SHELL.md §1. 'layer' is kept above because it is true, not because it may be printed.",
+
   "question": "What can we actually know from a coordinate?",
 
   "surface_rung": "live_local",

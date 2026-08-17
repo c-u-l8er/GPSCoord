@@ -13,11 +13,19 @@
 <div class="top"><a class="logo" href="/">gps<span>coord</span></a>
 <nav><a href="#answer">The answer</a><a href="#line">The line</a><a href="#verify">Evidence</a><a class="btn" href="{{APP_PATH}}">Open the converter</a></nav></div>
 
-<section>
+<section class="hero">
+<div class="front">
 <div class="eyebrow">The question this site exists to answer</div>
 <h1>What can we actually know from a <em>coordinate?</em></h1>
 <p class="lede">Less than the industry implies, and the honest amount is worth having. A latitude and longitude is a <strong>position</strong> — and position rewrites exactly into every grid system ever standardised. That part is arithmetic, it is settled, and <strong>it works here.</strong> Everything else people want from a coordinate — the county, the elevation, the timezone, the address — is not in the coordinate at all. It is in a dataset, and we do not have one.</p>
 <p><a class="btn" href="{{APP_PATH}}">Open the converter</a>&nbsp;&nbsp;<a class="btn ghost" href="#verify">How it was checked</a></p>
+</div>
+<!-- The identifying animation (SHELL.md §8). It comes AFTER the h1 in source
+     order and is positioned behind it, because the question comes first. It
+     renders no data and asserts nothing: /globe.js takes no input from this
+     document and writes nothing back into it. Delete the script tag below and
+     every figure, chip, status row and word on this page is still here. -->
+<div class="idanim" aria-hidden="true"><canvas id="routingCanvas" data-identity-animation></canvas></div>
 </section>
 
 {{PLATE}}
@@ -75,6 +83,7 @@
 <div>&copy; {{YEAR}} GPSCoord.com&ensp;·&ensp;<a href="/">{{QUESTION}}</a></div>
 <div class="links"><a href="{{APP_PATH}}">Converter</a><a href="{{REPO}}">Source</a><a href="{{CONTACT}}">Challenge a claim</a><a href="https://ampersandboxdesign.com">[&amp;]</a></div>
 </div>
-<p class="attrib"><span class="stamp">{{STAMP}}</span> — Coordinates are WGS84 (EPSG:4326). Projections use the Krüger series to sixth order; distances use Vincenty's inverse method on the WGS84 ellipsoid. No map data, no geocoding and no third-party service is used anywhere on this site, so there is nothing here to attribute — which is itself the honest measure of how little a coordinate alone can tell you.</p>
+<p class="attrib"><span class="stamp">{{STAMP}}</span>&ensp;·&ensp;Decoration only: the globe above draws nothing that is measured and nothing that is claimed. Every number on this page is recomputed from a frozen record at build time. — Coordinates are WGS84 (EPSG:4326). Projections use the Krüger series to sixth order; distances use Vincenty's inverse method on the WGS84 ellipsoid. No map data, no geocoding and no third-party service is used anywhere on this site, so there is nothing here to attribute — which is itself the honest measure of how little a coordinate alone can tell you.</p>
 </footer>
+<script src="/globe.js" defer></script>
 </body></html>

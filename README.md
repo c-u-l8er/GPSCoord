@@ -8,7 +8,10 @@ Everything else people want from a coordinate — the county, the elevation, the
 timezone, the address — is not in the coordinate at all. It is in a dataset, and
 this project does not have one. The site says so on the page.
 
-- `/` — the question, the boundary, and the evidence. Zero JavaScript.
+- `/` — the question, the boundary, and the evidence. **Its content ships with
+  zero JavaScript**: every figure, rung chip, status row and word is rendered at
+  build time from a frozen record. One deferred script draws the globe in the
+  hero and does nothing else — delete it and nothing is missing.
 - `/convert/` — the converter: DD ⇄ DMS ⇄ DDM ⇄ UTM ⇄ MGRS, plus geodesic
   distance and bearing. Entirely client-side. No API, no account, no request
   leaves the browser.
@@ -62,10 +65,32 @@ src/
   coord.mjs    the arithmetic. One source, imported by the build and by
                check.mjs, and inlined into /convert/ by mechanical transform
   app.js       the converter UI
+  globe.js     the identifying animation. Decoration: no inputs, no outputs
   shell.css    the ComputeDriven page shell (see ProjectAmp2/agents/SHELL.md)
   landing.html · convert.html   templates
-index.html · convert/index.html   GENERATED — do not edit
+index.html · convert/index.html · globe.js   GENERATED — do not edit
 ```
+
+## The globe renders no data and asserts nothing
+
+The hero carries a rotating globe with a routing graph on it — the site's
+identifying animation, required of every ComputeDriven surface by SHELL.md §8.
+It is **decoration, and it is sealed off from the page**: it takes no input from
+the document, writes nothing back into it, and exposes no global.
+
+That is not fastidiousness. The previous version of this site drew twelve
+vehicles with `for (let i = 0; i < 12; i++)` and printed **"12 Active
+Pathfinders"** beside them for months — a canvas constant published as a live
+user metric. The publication gate now refuses any page whose text equals a
+constant read from `globe.js`. **When it fires, the animation changes, never the
+page:** the page's figures are recomputed from frozen records and have
+witnesses; the animation can pick any number it likes.
+
+It honours `prefers-reduced-motion` (one frame, then stop), caps its frame rate,
+stops when the tab is hidden and when it scrolls out of view, and starts from a
+`setTimeout` rather than an `IntersectionObserver` — IO never fires in a
+non-compositing renderer, and an animation that never starts reads as a broken
+page.
 
 ## Accuracy
 

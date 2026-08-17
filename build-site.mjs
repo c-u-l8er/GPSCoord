@@ -93,8 +93,22 @@ function rung(value) {
     return `<span class="rung" data-rung="${r}" title="spec · in_tree · live_local · live_deployed · external">${r}</span>`;
 }
 
+/* The band states where you are. What it may state depends on the TIER, and
+   the tier is a record, not a choice made here: amp-nav files gpscoord as
+   place:4, "Outside — nav removed". A tier-4 surface may attribute itself to
+   the parent but may NOT claim to be a layer of it — claiming membership in a
+   portfolio whose own nav excludes you is a false claim, and this page carried
+   one. The rung chip and the covers span stay at every tier: they are honesty
+   machinery, not branding. SHELL.md §1. */
 function band() {
-    return `<div class="band"><span class="where">${esc(surface.surface)} is the <b>${esc(surface.layer)}</b> layer of ${esc(surface.parent)}</span>${rung(surface.surface_rung)}<span class="covers">That rung covers ${esc(surface.surface_rung_covers)}.</span></div>`;
+    if (![4, 3, 2, 1].includes(surface.tier)) {
+        throw new Error(`BUILD REFUSED — records/surface.json declares no tier, so the band cannot know what it may claim.`);
+    }
+    const where =
+        surface.tier === 4
+            ? `A <b>${esc(surface.parent)}</b> project`
+            : `${esc(surface.surface)} is the <b>${esc(surface.layer)}</b> layer of ${esc(surface.parent)}`;
+    return `<div class="band" data-tier="${surface.tier}"><span class="where">${where}</span>${rung(surface.surface_rung)}<span class="covers">That rung covers ${esc(surface.surface_rung_covers)}.</span></div>`;
 }
 
 function statusBlock() {
@@ -246,6 +260,22 @@ const CSS = read("./src/shell.css")
     .replace(/\n\s*/g, "")
     .replace(/;\}/g, "}")
     .trim();
+
+/* The identifying animation (SHELL.md §8) is emitted as its own artifact
+   rather than inlined. Two reasons, and the second is the point: the landing
+   page's markup stays content-only, so that "the content is complete with
+   JavaScript off" is something a reader can verify by deleting one line; and
+   the animation becomes a file the publication gate can read constants out of
+   and compare against the page. Comments and indentation are stripped, and
+   NEWLINES ARE KEPT — joining JavaScript lines the way the CSS is joined would
+   be a semicolon-insertion bug waiting to happen. */
+const GLOBE = read("./src/globe.js")
+    .replace(/\/\*[\s\S]*?\*\//g, "")
+    .replace(/^[ \t]*\/\/.*$/gm, "")
+    .replace(/^[ \t]+/gm, "")
+    .replace(/[ \t]+$/gm, "")
+    .replace(/\n{2,}/g, "\n")
+    .trim();
 const YEAR = new Date(surface.verified_at).getUTCFullYear();
 
 const COMMON = {
@@ -323,8 +353,10 @@ function fill(tpl, vars) {
 }
 
 writeFileSync("./index.html", landing);
+writeFileSync("./globe.js", GLOBE + "\n");
 mkdirSync("./convert", { recursive: true });
 writeFileSync("./convert/index.html", app);
 
 console.log(`wrote index.html          ${landing.length.toLocaleString()} bytes`);
+console.log(`wrote globe.js            ${GLOBE.length.toLocaleString()} bytes  (decoration; the page's content does not depend on it)`);
 console.log(`wrote convert/index.html  ${app.length.toLocaleString()} bytes`);
