@@ -75,7 +75,10 @@ img,canvas,svg{max-width:100%}
   -webkit-mask-image:radial-gradient(circle at 56% 50%,#000 44%,transparent 74%);
   mask-image:radial-gradient(circle at 56% 50%,#000 44%,transparent 74%)}
 .idanim canvas{display:block;width:100%;height:100%}
-@media(min-width:861px){.hero .lede{max-width:50ch}}
+/* Wide: it sits beside the text, so the hero's lede gives up the width the
+   globe occupies rather than running under it. The percentage is what holds
+   at 861-1000px, where 50ch alone still grazed the graticule. */
+@media(min-width:861px){.hero .lede{max-width:min(50ch,56%)}}
 /* Narrow: there is no column to sit beside, so it becomes a texture behind the
    text. Pulled further off the right edge and quietened, because a bright
    vehicle landing on a word is the one way this could cost the reader. */
