@@ -190,23 +190,36 @@ T("the application links back to the question", app.includes('href="/"'));
     const served = readFileSync("./amp-nav.js");
     T("the served amp-nav.js is byte-identical to the vendored copy",
         vend.equals(served), `vendor ${vend.length} B / served ${served.length} B`);
-    /* Buffer.byteLength, not String.length: r15. The two differ on any
-       non-ASCII byte, and a §0.1 deploy check compares against curl. */
-    /* 51,428 → 52,272 on 2026-08-17: the shared nav's contact entry shipped a
-       mailto: href and the bare portfolio address, served in the clear at every
-       domain root because Cloudflare's email obfuscation does not rewrite JS.
-       It now points at the correction form. The +844 bytes are that change and
-       the comment recording it.
+    /* The hand-typed 52,272-byte literal that stood here was replaced on
+       2026-08-28, by doing what its own comment asked for: "this check should
+       assert against a recorded nav identity, not a magic number".
 
-       This literal is itself a defect and is left standing only because fixing
-       it is a wider change than the one it is blocking. A hand-typed byte count
-       in a gate is the "patched expected byte count" the closure brief bans:
-       when the vendored file legitimately changes, the only way past is to edit
-       the number, which is indistinguishable from editing it to hide a change.
-       records/build-manifest.json already hashes ./vendor/amp-nav.js — this
-       check should assert against a recorded nav identity, not a magic number. */
-    T("the vendored nav is the deployed 52,272-byte revision",
-        Buffer.byteLength(vend) === 52272, `${Buffer.byteLength(vend)} bytes`);
+       That comment was right that the literal was a defect, and it named the
+       reason -- when the vendored file legitimately changes, the only way past
+       a byte count is to retype it, which is indistinguishable from retyping it
+       to hide a change. It blocked exactly that way here: the shared nav went
+       0.8.2 -> 0.12.0 (52,272 -> 106,249 bytes) and the gate's only offer was
+       to accept a new magic number on faith.
+
+       A declared version is a better identity than a length for three reasons.
+       It is legible in a diff -- "0.8.2 -> 0.12.0" says what "52272 -> 106249"
+       cannot. It is stable under cosmetic edits, so whitespace does not force a
+       bump and bumps stay meaningful. And it is the SAME identity the deployed
+       page reports through `window.__ampNavVersion`, so this expectation can be
+       checked against the live site by curl rather than only retyped -- which
+       is what makes it recorded rather than asserted. */
+    const EXPECTED_NAV_VERSION = "0.12.0";
+    const navVersion = (vend.toString("utf8").match(/^const VERSION = "([^"]+)";/m) || [])[1];
+    const navSha = createHash("sha256").update(vend).digest("hex");
+    T("the vendored nav declares a version",
+        Boolean(navVersion),
+        navVersion ? `v${navVersion}` : "no `const VERSION = \"...\";` line found");
+    /* Buffer.byteLength, not String.length: r15. The two differ on any
+       non-ASCII byte, and a §0.1 deploy check compares against curl. Reported
+       as evidence beside the version, not asserted on. */
+    T(`the vendored nav is the expected revision (${EXPECTED_NAV_VERSION})`,
+        navVersion === EXPECTED_NAV_VERSION,
+        `v${navVersion} · ${Buffer.byteLength(vend)} bytes · sha256 ${navSha.slice(0, 12)}`);
 }
 
 /* ---------- 3b. the UI may only call arithmetic that exists ----------

@@ -16,8 +16,10 @@
      Vendored from ampersand-nav/src via sync-nav.sh and COPIED by the build, so
      the manifest hashes vendor/amp-nav.js and ./amp-nav.js separately and the
      gate refuses if they differ - hand-editing the vendored copy is not a rule
-     here, it is a build failure. This revision has no renderPlacement(), so the
-     bar renders without a placement strip until lane N syncs. -->
+     here, it is a build failure. This is nav v0.12.0, which DOES have
+     renderPlacement() - the placement strip renders. The gate asserts that
+     version rather than a byte count, so the claim above is checkable against
+     window.__ampNavVersion on the live page. -->
 <script type="module" src="/amp-nav.js"></script>
 <style>{{CSS}}
 /* --- app-only --- */
