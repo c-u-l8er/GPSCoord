@@ -208,7 +208,7 @@ T("the application links back to the question", app.includes('href="/"'));
        page reports through `window.__ampNavVersion`, so this expectation can be
        checked against the live site by curl rather than only retyped -- which
        is what makes it recorded rather than asserted. */
-    const EXPECTED_NAV_VERSION = "0.12.0";
+    const EXPECTED_NAV_VERSION = "0.12.1"; /* 2026-09-05: Graphonomous shows in_tree; the nav moved 0.12.0 -> 0.12.1 */
     const navVersion = (vend.toString("utf8").match(/^const VERSION = "([^"]+)";/m) || [])[1];
     const navSha = createHash("sha256").update(vend).digest("hex");
     T("the vendored nav declares a version",
