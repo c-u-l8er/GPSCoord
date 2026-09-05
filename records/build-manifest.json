@@ -1,14 +1,14 @@
 {
   "status": "complete",
   "note": "Written last, only on success. launch-gate.mjs recomputes every hash below and refuses on any mismatch — an artifact this build did not emit, or a source that has moved since it did.",
-  "built_at": "2026-08-28T19:03:22.870Z",
+  "built_at": "2026-09-05T17:10:30.793Z",
   "version": "0.2.0",
   "outputs": {
     "./index.html": "0a12dea8d501cf7fcf4214851f627852372f0cf1198b40c386acbbd1beee211c",
     "./globe.js": "59571fc94828e8485371c63b178054e7da38a229ee5039b2fb6bbe6f93dfd83b",
     "./contact.js": "e3b8543f0df06559cd224786abdf05d9e7ade1973b00528bed79d5e48dcea60d",
     "./convert/index.html": "d1c4fb19ff059bfc5dad8ec2bee0d5a5ab6f3a36a8643318ec39ed14ee13b174",
-    "./amp-nav.js": "4dbb1ca65227b782a6ea3247f180c7721c0838ffcccfab87b36845c087f60a36"
+    "./amp-nav.js": "296ddfc8b9e3de3d795a222bf195666db6cc82a6bb70af0036e65768c1e0a159"
   },
   "inputs": {
     "./build-site.mjs": "c2ff6c2822703435abdaaea7d6b3046bccf1891ad836fd9b52323ae891276ed9",
@@ -20,7 +20,7 @@
     "./src/globe.js": "179be4212312f5f404e39e59e878804da31f8eaf2bbf0ea4db672bf931c73f7f",
     "./src/landing.html": "36745509bbedba80f987d992d6fb4fa1564f0e6275bc997dd341cbc076dfc2c7",
     "./src/shell.css": "af45ee9edd9776991eb6a4be1b135409d8ea23160173eb5055db379022cb34f3",
-    "./vendor/amp-nav.js": "4dbb1ca65227b782a6ea3247f180c7721c0838ffcccfab87b36845c087f60a36",
+    "./vendor/amp-nav.js": "296ddfc8b9e3de3d795a222bf195666db6cc82a6bb70af0036e65768c1e0a159",
     "./records/reference-pairs.json": "0a5a12c0b80d34043b3e52c89c1fdc330afa3f8c8a3b173a0a4efff13b07b088",
     "./records/reference-points.json": "5fba0006471d50f880fa3b14abc7ce9a0e8ae68664965893ffb767ebbcd4c6d2",
     "./records/surface.json": "f5757cd6622c99f5958d8555b3e8a01a73312b570e6de3ce2da40195f1322d17",
